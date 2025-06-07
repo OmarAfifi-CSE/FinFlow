@@ -6,7 +6,6 @@ import '../providers/expense_provider.dart';
 import '../widgets/add_category_dialog.dart';
 import '../widgets/add_tag_dialog.dart';
 
-// The new widget designed to be used in a modal bottom sheet.
 class AddExpenseSheet extends StatefulWidget {
   final Expense? expense;
 
@@ -17,19 +16,24 @@ class AddExpenseSheet extends StatefulWidget {
 }
 
 class _AddExpenseSheetState extends State<AddExpenseSheet> {
-  // All state and controllers from your original screen are kept here.
   late TextEditingController _amountController;
   late TextEditingController _payeeController;
   late TextEditingController _noteController;
   String? _selectedCategoryId;
   String? _selectedTagId;
   DateTime _selectedDate = DateTime.now();
+  bool _isExpense = true;
 
   @override
   void initState() {
     super.initState();
-    _amountController =
-        TextEditingController(text: widget.expense?.amount.toString() ?? '');
+    if (widget.expense != null) {
+      _isExpense = widget.expense!.amount < 0;
+      _amountController =
+          TextEditingController(text: widget.expense!.amount.abs().toString());
+    } else {
+      _amountController = TextEditingController();
+    }
     _payeeController = TextEditingController(text: widget.expense?.payee ?? '');
     _noteController = TextEditingController(text: widget.expense?.note ?? '');
     _selectedDate = widget.expense?.date ?? DateTime.now();
@@ -68,14 +72,20 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             ),
             SizedBox(height: 16),
             Text(
-              widget.expense == null ? 'Add Expense' : 'Edit Expense',
+              widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 24),
+            // This now calls our new, robust toggle widget
+            buildTransactionTypeToggle(),
+            SizedBox(height: 16),
             buildTextField(_amountController, 'Amount',
                 TextInputType.numberWithOptions(decimal: true)),
-            buildTextField(_payeeController, 'Payee', TextInputType.text),
-            buildTextField(_noteController, 'Note', TextInputType.text),
+            if (_isExpense)
+              buildTextField(
+                  _payeeController, 'Payee (Optional)', TextInputType.text),
+            buildTextField(
+                _noteController, 'Note (Optional)', TextInputType.text),
             buildDateField(context, _selectedDate),
             SizedBox(height: 8),
             buildCategoryDropdown(context.watch<ExpenseProvider>()),
@@ -91,8 +101,8 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: _saveExpense,
-              child: Text('Save Expense'),
+              onPressed: _saveTransaction,
+              child: Text('Save Transaction'),
             ),
           ],
         ),
@@ -100,28 +110,95 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
     );
   }
 
-  void _saveExpense() {
-    if (_amountController.text.isEmpty || _selectedCategoryId == null) {
+  // --- WIDGET REWRITTEN TO FIX OVERFLOW ---
+  Widget buildTransactionTypeToggle() {
+    // This custom implementation using Row and Expanded is more robust
+    // and prevents layout overflows.
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (!_isExpense) setState(() => _isExpense = true);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _isExpense ? Colors.red[400] : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    'Expense',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _isExpense ? Colors.white : Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_isExpense) setState(() => _isExpense = false);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !_isExpense ? Colors.green[400] : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    'Income',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: !_isExpense ? Colors.white : Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveTransaction() {
+    final amountText = _amountController.text.trim();
+    if (amountText.isEmpty || _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Amount and Category are required!')));
       return;
     }
 
+    final double amount = double.tryParse(amountText) ?? 0.0;
+    final double finalAmount = _isExpense ? -amount : amount;
+
     final expense = Expense(
       id: widget.expense?.id ?? DateTime.now().toString(),
-      amount: double.parse(_amountController.text),
+      amount: finalAmount,
       categoryId: _selectedCategoryId!,
       payee: _payeeController.text,
       note: _noteController.text,
       date: _selectedDate,
-      // FIX 1: Provide a default empty string if the tag is null.
       tag: _selectedTagId ?? '',
     );
 
-    Provider.of<ExpenseProvider>(context, listen: false).addOrUpdateExpense(expense);
+    Provider.of<ExpenseProvider>(context, listen: false)
+        .addOrUpdateExpense(expense);
     Navigator.pop(context);
   }
 
+  // Helper methods are unchanged
   Widget buildTextField(
       TextEditingController controller, String label, TextInputType type) {
     return Padding(
@@ -130,7 +207,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         keyboardType: type,
       ),
@@ -138,22 +215,29 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
   }
 
   Widget buildDateField(BuildContext context, DateTime selectedDate) {
-    return ListTile(
-      title: Text("Date: ${DateFormat.yMMMd().format(selectedDate)}"),
-      trailing: Icon(Icons.calendar_today, color: const Color(0xFF2E9A91)),
-      onTap: () async {
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: selectedDate,
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
-        );
-        if (picked != null && picked != selectedDate) {
-          setState(() {
-            _selectedDate = picked;
-          });
-        }
-      },
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+            side: BorderSide(color: Colors.grey[600]!, width: 0.6),
+            borderRadius: BorderRadius.circular(12)),
+        title: Text("Date: ${DateFormat.yMMMd().format(selectedDate)}"),
+        trailing: Icon(Icons.calendar_today, color: const Color(0xFF2E9A91)),
+        onTap: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: selectedDate,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null && picked != selectedDate) {
+            setState(() {
+              _selectedDate = picked;
+            });
+          }
+        },
+      ),
     );
   }
 
@@ -162,14 +246,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       value: _selectedCategoryId,
       onChanged: (newValue) {
         if (newValue == 'New') {
-          // FIX 2: Added the required 'context' and 'builder' arguments.
           showDialog(
             context: context,
             builder: (context) => AddCategoryDialog(onAdd: (newCategory) {
-              setState(() {
-                _selectedCategoryId = newCategory.id;
-                provider.addCategory(newCategory);
-              });
+              provider.addCategory(newCategory);
+              setState(() => _selectedCategoryId = newCategory.id);
             }),
           );
         } else {
@@ -184,11 +265,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       }).toList()
         ..add(DropdownMenuItem(
           value: "New",
-          child: Text("＋ Add New Category", style: TextStyle(color: const Color(0xFF2E9A91))),
+          child: Text("＋ Add New Category",
+              style: TextStyle(color: const Color(0xFF2E9A91))),
         )),
       decoration: InputDecoration(
         labelText: 'Category',
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -198,7 +280,6 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       value: _selectedTagId,
       onChanged: (newValue) {
         if (newValue == 'New') {
-          // FIX 3: Added the required 'context' and 'builder' arguments.
           showDialog(
             context: context,
             builder: (context) => AddTagDialog(onAdd: (newTag) {
@@ -218,11 +299,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       }).toList()
         ..add(DropdownMenuItem(
           value: "New",
-          child: Text("＋ Add New Tag", style: TextStyle(color: const Color(0xFF2E9A91))),
+          child: Text("＋ Add New Tag",
+              style: TextStyle(color: const Color(0xFF2E9A91))),
         )),
       decoration: InputDecoration(
         labelText: 'Tag (Optional)',
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

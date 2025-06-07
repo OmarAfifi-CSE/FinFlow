@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'dart:math'; // Imported for the hash code logic
 
 import '../providers/expense_provider.dart';
-import '../screens/add_expense_screen.dart';
 import '../models/expense.dart';
 import 'add_expense_sheet.dart';
 
@@ -20,35 +19,60 @@ class CategoryTheme {
 // Mapping of category names to their specific icons
 const Map<String, IconData> categoryIcons = {
   'Food': Icons.fastfood,
-  'Transport': Icons.emoji_transportation,
+  'Transport': Icons.train,
   'Shopping': Icons.shopping_bag,
   'Groceries': Icons.local_grocery_store,
   'Bills': Icons.receipt,
   'Entertainment': Icons.movie,
+  'Salary': Icons.attach_money,
 };
 
 // --- Main themes for specific, hardcoded categories ---
 final Map<String, CategoryTheme> categoryThemes = {
-  'Food': CategoryTheme(color: Colors.red[400]!, backgroundColor: Colors.red[50]!),
-  'Transport': CategoryTheme(color: Colors.orange[400]!, backgroundColor: Colors.orange[50]!),
-  'Shopping': CategoryTheme(color: Colors.green[600]!, backgroundColor: Colors.green[50]!),
-  'Groceries': CategoryTheme(color: Colors.blue[400]!, backgroundColor: Colors.blue[50]!),
-  'Bills': CategoryTheme(color: Colors.purple[400]!, backgroundColor: Colors.purple[50]!),
-  'Entertainment': CategoryTheme(color: Colors.teal[400]!, backgroundColor: Colors.teal[50]!),
+  'Food': CategoryTheme(
+    color: Colors.red[400]!,
+    backgroundColor: Colors.red[50]!,
+  ),
+  'Transport': CategoryTheme(
+    color: Colors.orange[400]!,
+    backgroundColor: Colors.orange[50]!,
+  ),
+  'Shopping': CategoryTheme(
+    color: Colors.blue[400]!,
+    backgroundColor: Colors.blue[50]!,
+  ),
+  'Groceries': CategoryTheme(
+    color: Colors.teal[400]!,
+    backgroundColor: Colors.teal[50]!,
+  ),
+  'Bills': CategoryTheme(
+    color: Colors.purple[400]!,
+    backgroundColor: Colors.purple[50]!,
+  ),
+  'Entertainment': CategoryTheme(
+    color: Colors.brown[400]!,
+    backgroundColor: Colors.brown[50]!,
+  ),
+  'Salary': CategoryTheme(
+    color: Colors.green[700]!,
+    backgroundColor: Colors.green[50]!,
+  ),
 };
 
-// --- NEW: A list of default themes for any new categories ---
-// We will pick from this list using the category name's hash code.
+// A list of default themes for any new, user-created categories
 final List<CategoryTheme> defaultCategoryThemes = [
-  CategoryTheme(color: Colors.teal[400]!, backgroundColor: Colors.teal[50]!),
-  CategoryTheme(color: Colors.lightBlue[600]!, backgroundColor: Colors.lightBlue[50]!),
+  CategoryTheme(
+    color: Colors.lightBlue[600]!,
+    backgroundColor: Colors.lightBlue[50]!,
+  ),
   CategoryTheme(color: Colors.pink[400]!, backgroundColor: Colors.pink[50]!),
   CategoryTheme(color: Colors.amber[700]!, backgroundColor: Colors.amber[50]!),
-  CategoryTheme(color: Colors.indigo[400]!, backgroundColor: Colors.indigo[50]!),
-  CategoryTheme(color: Colors.brown[400]!, backgroundColor: Colors.brown[50]!),
+  CategoryTheme(
+    color: Colors.indigo[400]!,
+    backgroundColor: Colors.indigo[50]!,
+  ),
   CategoryTheme(color: Colors.cyan[600]!, backgroundColor: Colors.cyan[50]!),
 ];
-
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -59,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
 
   @override
   void initState() {
@@ -96,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Manage Categories'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage_categories');
+                // Navigator.pushNamed(context, '/manage_categories');
               },
             ),
             ListTile(
@@ -104,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Manage Tags'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage_tags');
+                // Navigator.pushNamed(context, '/manage_tags');
               },
             ),
           ],
@@ -112,12 +135,8 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeader(context),
-          ),
-          SliverToBoxAdapter(
-            child: _buildTabBar(),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(context)),
+          SliverToBoxAdapter(child: _buildTabBar()),
           SliverFillRemaining(
             child: TabBarView(
               controller: _tabController,
@@ -132,22 +151,18 @@ class _HomeScreenState extends State<HomeScreen>
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // This is the new way to open the sheet.
           showModalBottomSheet(
             context: context,
-            // This makes the sheet scrollable and avoids the keyboard covering the fields.
             isScrollControlled: true,
-            // This gives the sheet the rounded top corners.
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             builder: (context) {
-              // Here we build our new sheet widget.
               return AddExpenseSheet();
             },
           );
         },
-        tooltip: 'Add Expense',
+        tooltip: 'Add Transaction',
         child: Icon(Icons.add, size: 30),
         backgroundColor: const Color(0xFF2E9A91),
         elevation: 4.0,
@@ -156,14 +171,20 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // --- HEADER WIDGET UPDATED ---
   Widget _buildHeader(BuildContext context) {
-    // Dummy data for display purposes
-    final totalBalance = 1000;
-    final totalIncome = 100;
-    final totalExpenses = 200;
+    final provider = Provider.of<ExpenseProvider>(context);
+    final totalBalance = provider.totalBalance;
+    final totalIncome = provider.totalIncome;
+    final totalExpenses = provider.totalExpenses;
 
     return Container(
-      padding: const EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0, bottom: 20.0),
+      padding: const EdgeInsets.only(
+        top: 40.0,
+        left: 20.0,
+        right: 20.0,
+        bottom: 20.0,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFF2E9A91),
         borderRadius: BorderRadius.only(
@@ -182,7 +203,15 @@ class _HomeScreenState extends State<HomeScreen>
                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 tooltip: 'Open menu',
               ),
-              const Icon(Icons.more_horiz, color: Colors.white, size: 28),
+              // --- APP NAME ADDED HERE ---
+              const Text(
+                'FinFlow',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -215,13 +244,21 @@ class _HomeScreenState extends State<HomeScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildIncomeExpense('Income', '\$${totalIncome.toStringAsFixed(2)}', Icons.arrow_downward),
-                    _buildIncomeExpense('Expenses', '\$${totalExpenses.toStringAsFixed(2)}', Icons.arrow_upward),
+                    _buildIncomeExpense(
+                      'Income',
+                      '\$${totalIncome.toStringAsFixed(2)}',
+                      Icons.arrow_downward,
+                    ),
+                    _buildIncomeExpense(
+                      'Expenses',
+                      '\$${totalExpenses.toStringAsFixed(2)}',
+                      Icons.arrow_upward,
+                    ),
                   ],
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -237,14 +274,21 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Text(
               title,
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 14,
+              ),
             ),
             Text(
               value,
-              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -308,11 +352,13 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           );
         }
+        final sortedExpenses = provider.expenses
+          ..sort((a, b) => b.date.compareTo(a.date));
         return ListView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          itemCount: provider.expenses.length,
+          itemCount: sortedExpenses.length,
           itemBuilder: (context, index) {
-            final expense = provider.expenses[index];
+            final expense = sortedExpenses[index];
             return _buildTransactionItem(context, expense);
           },
         );
@@ -335,16 +381,20 @@ class _HomeScreenState extends State<HomeScreen>
         return ListView(
           padding: EdgeInsets.symmetric(horizontal: 16),
           children: grouped.entries.map((entry) {
-            String categoryName = getCategoryNameById(context, entry.key);
+            String categoryName = provider.getCategoryForId(entry.key).name;
             double total = entry.value.fold(
-                0.0, (double prev, Expense element) => prev + element.amount);
+              0.0,
+              (double prev, Expense element) => prev + element.amount,
+            );
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12.0,
+                    horizontal: 8.0,
+                  ),
                   child: Text(
                     "$categoryName - Total: \$${total.abs().toStringAsFixed(2)}",
                     style: TextStyle(
@@ -354,7 +404,9 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
                 ),
-                ...entry.value.map((expense) => _buildTransactionItem(context, expense)).toList(),
+                ...entry.value
+                    .map((expense) => _buildTransactionItem(context, expense))
+                    .toList(),
               ],
             );
           }).toList(),
@@ -363,21 +415,23 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- WIDGET UPDATED WITH NEW LOGIC FOR RANDOM COLORS ---
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
-    String categoryName = getCategoryNameById(context, expense.categoryId);
-    IconData icon = categoryIcons[categoryName] ?? Icons.category; // A generic fallback icon
+    final provider = Provider.of<ExpenseProvider>(context, listen: false);
+    final categoryName = provider.getCategoryForId(expense.categoryId).name;
 
-    // Get the category-specific theme.
-    CategoryTheme theme = categoryThemes[categoryName] ??
-        // If not found, use the HASHING method to pick a consistent "random" color.
-        defaultCategoryThemes[categoryName.hashCode % defaultCategoryThemes.length];
+    final IconData icon = categoryIcons[categoryName] ?? Icons.category;
+    final CategoryTheme theme =
+        categoryThemes[categoryName] ??
+        defaultCategoryThemes[categoryName.hashCode %
+            defaultCategoryThemes.length];
 
-    String formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
+    final bool isIncome = expense.amount > 0;
+    final String formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
 
-    // expense
-    Color amountColor = Colors.red;
-    String amountPrefix = '-';
+    // --- COLOR LOGIC CORRECTED ---
+    // Use green for income, and the specific category theme color for expenses.
+    final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
+    final String amountPrefix = isIncome ? '+' : '-';
 
     return Card(
       elevation: 1,
@@ -385,14 +439,14 @@ class _HomeScreenState extends State<HomeScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: theme.backgroundColor, // Use background color from theme
-          child: Icon(icon, color: theme.color),   // Use main color from theme
+          backgroundColor: theme.backgroundColor,
+          child: Icon(icon, color: theme.color),
         ),
         title: Text(
-          categoryName,
+          expense.payee.isNotEmpty ? expense.payee : categoryName,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(formattedDate),
+        subtitle: Text(categoryName),
         trailing: Text(
           '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
           style: TextStyle(
@@ -403,16 +457,5 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
-  }
-
-  String getCategoryNameById(BuildContext context, String categoryId) {
-    try {
-      var category = Provider.of<ExpenseProvider>(context, listen: false)
-          .categories
-          .firstWhere((cat) => cat.id == categoryId);
-      return category.name;
-    } catch (e) {
-      return "Unknown Category";
-    }
   }
 }

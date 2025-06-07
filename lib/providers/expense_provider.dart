@@ -18,6 +18,7 @@ class ExpenseProvider with ChangeNotifier {
     ExpenseCategory(id: '4', name: 'Groceries', isDefault: true),
     ExpenseCategory(id: '5', name: 'Bills', isDefault: true),
     ExpenseCategory(id: '6', name: 'Entertainment', isDefault: true),
+    ExpenseCategory(id: '7', name: 'Salary', isDefault: true), // Added for income
   ];
 
   // List of tags
@@ -37,6 +38,7 @@ class ExpenseProvider with ChangeNotifier {
     Tag(id: '13', name: 'CarStuff'),
     Tag(id: '14', name: 'SelfCare'),
     Tag(id: '15', name: 'Streaming'),
+    Tag(id: '16', name: 'Work'), // Added for income
   ];
 
   // Getters
@@ -44,12 +46,36 @@ class ExpenseProvider with ChangeNotifier {
   List<ExpenseCategory> get categories => _categories;
   List<Tag> get tags => _tags;
 
+  // --- ADD THIS CALCULATION LOGIC ---
+
+  /// Calculates the current balance (total income minus total expenses).
+  double get totalBalance {
+    // This simply sums up all transaction amounts.
+    // Negative expenses will automatically be subtracted from positive income.
+    return _expenses.fold(0.0, (sum, item) => sum + item.amount);
+  }
+
+  /// Calculates the total income by summing up all positive amounts.
+  double get totalIncome {
+    return _expenses
+        .where((exp) => exp.amount > 0)
+        .fold(0.0, (sum, item) => sum + item.amount);
+  }
+
+  /// Calculates total expenses by summing up the absolute value of all negative amounts.
+  /// We use .abs() so the UI shows a positive number (e.g., "$284.00").
+  double get totalExpenses {
+    return _expenses
+        .where((exp) => exp.amount < 0)
+        .fold(0.0, (sum, item) => sum + item.amount.abs());
+  }
+
   ExpenseProvider(this.storage) {
     _loadExpensesFromStorage();
   }
 
   void _loadExpensesFromStorage() async {
-    // await storage.ready;
+    // await storage.ready; // Uncomment if your localstorage version needs it
     var storedExpenses = storage.getItem('expenses');
     if (storedExpenses != null) {
       _expenses = List<Expense>.from(
@@ -123,5 +149,9 @@ class ExpenseProvider with ChangeNotifier {
     _expenses.removeWhere((expense) => expense.id == id);
     _saveExpensesToStorage(); // Save the updated list to local storage
     notifyListeners();
+  }
+
+  ExpenseCategory getCategoryForId(String categoryId) {
+    return categories.firstWhere((cat) => cat.id == categoryId, orElse: () => ExpenseCategory(id: 'unknown', name: 'Unknown', isDefault: false));
   }
 }
