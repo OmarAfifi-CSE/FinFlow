@@ -2,20 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
+import 'dart:math'; // Imported for the hash code logic
 
 import '../providers/expense_provider.dart';
 import '../screens/add_expense_screen.dart';
 import '../models/expense.dart';
+import 'add_expense_sheet.dart';
 
-// Mapping of category names to specific icons.
+// A simple class to hold the color theme for a category
+class CategoryTheme {
+  final Color color;
+  final Color backgroundColor;
+
+  const CategoryTheme({required this.color, required this.backgroundColor});
+}
+
+// Mapping of category names to their specific icons
 const Map<String, IconData> categoryIcons = {
   'Food': Icons.fastfood,
-  'Travel': Icons.emoji_transportation,
+  'Transport': Icons.emoji_transportation,
   'Shopping': Icons.shopping_bag,
   'Groceries': Icons.local_grocery_store,
   'Bills': Icons.receipt,
   'Entertainment': Icons.movie,
 };
+
+// --- Main themes for specific, hardcoded categories ---
+final Map<String, CategoryTheme> categoryThemes = {
+  'Food': CategoryTheme(color: Colors.red[400]!, backgroundColor: Colors.red[50]!),
+  'Transport': CategoryTheme(color: Colors.orange[400]!, backgroundColor: Colors.orange[50]!),
+  'Shopping': CategoryTheme(color: Colors.green[600]!, backgroundColor: Colors.green[50]!),
+  'Groceries': CategoryTheme(color: Colors.blue[400]!, backgroundColor: Colors.blue[50]!),
+  'Bills': CategoryTheme(color: Colors.purple[400]!, backgroundColor: Colors.purple[50]!),
+  'Entertainment': CategoryTheme(color: Colors.teal[400]!, backgroundColor: Colors.teal[50]!),
+};
+
+// --- NEW: A list of default themes for any new categories ---
+// We will pick from this list using the category name's hash code.
+final List<CategoryTheme> defaultCategoryThemes = [
+  CategoryTheme(color: Colors.teal[400]!, backgroundColor: Colors.teal[50]!),
+  CategoryTheme(color: Colors.lightBlue[600]!, backgroundColor: Colors.lightBlue[50]!),
+  CategoryTheme(color: Colors.pink[400]!, backgroundColor: Colors.pink[50]!),
+  CategoryTheme(color: Colors.amber[700]!, backgroundColor: Colors.amber[50]!),
+  CategoryTheme(color: Colors.indigo[400]!, backgroundColor: Colors.indigo[50]!),
+  CategoryTheme(color: Colors.brown[400]!, backgroundColor: Colors.brown[50]!),
+  CategoryTheme(color: Colors.cyan[600]!, backgroundColor: Colors.cyan[50]!),
+];
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -45,32 +78,32 @@ class _HomeScreenState extends State<HomeScreen>
     const primaryColor = Color(0xFF2E9A91);
 
     return Scaffold(
-      key: _scaffoldKey, // Add scaffold key to open drawer
+      key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration: BoxDecoration(color: primaryColor), // Corrected color
+              decoration: BoxDecoration(color: primaryColor),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.category, color: primaryColor), // Corrected color
+              leading: Icon(Icons.category, color: primaryColor),
               title: Text('Manage Categories'),
               onTap: () {
-                Navigator.pop(context); // Closes the drawer
+                Navigator.pop(context);
                 Navigator.pushNamed(context, '/manage_categories');
               },
             ),
             ListTile(
-              leading: Icon(Icons.tag, color: primaryColor), // Corrected color
+              leading: Icon(Icons.tag, color: primaryColor),
               title: Text('Manage Tags'),
               onTap: () {
-                Navigator.pop(context); // Closes the drawer
+                Navigator.pop(context);
                 Navigator.pushNamed(context, '/manage_tags');
               },
             ),
@@ -98,23 +131,33 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AddExpenseScreen()),
-        ),
+        onPressed: () {
+          // This is the new way to open the sheet.
+          showModalBottomSheet(
+            context: context,
+            // This makes the sheet scrollable and avoids the keyboard covering the fields.
+            isScrollControlled: true,
+            // This gives the sheet the rounded top corners.
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) {
+              // Here we build our new sheet widget.
+              return AddExpenseSheet();
+            },
+          );
+        },
         tooltip: 'Add Expense',
         child: Icon(Icons.add, size: 30),
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFF2E9A91),
         elevation: 4.0,
       ),
       bottomNavigationBar: _buildBottomAppBar(),
     );
   }
 
-  /// Builds the top header section with the new user-provided design.
   Widget _buildHeader(BuildContext context) {
-    final provider = Provider.of<ExpenseProvider>(context, listen: false);
-    // Using dummy data as in your provided code
+    // Dummy data for display purposes
     final totalBalance = 1000;
     final totalIncome = 100;
     final totalExpenses = 200;
@@ -131,23 +174,18 @@ class _HomeScreenState extends State<HomeScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // FIX: The Row containing the drawer icon was missing. It is added back here.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white, size: 28),
-                onPressed: () {
-                  // This line opens the drawer.
-                  _scaffoldKey.currentState?.openDrawer();
-                },
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 tooltip: 'Open menu',
               ),
               const Icon(Icons.more_horiz, color: Colors.white, size: 28),
             ],
           ),
           const SizedBox(height: 10),
-          // Rest of your header code remains the same
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -157,17 +195,12 @@ class _HomeScreenState extends State<HomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Balance',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Total Balance',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -194,7 +227,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Helper widget to build the Income/Expense section in the header.
   Widget _buildIncomeExpense(String title, String value, IconData icon) {
     return Row(
       children: [
@@ -217,7 +249,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds the tab bar for switching between views.
   Widget _buildTabBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -234,7 +265,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds the bottom app bar with navigation icons.
   Widget _buildBottomAppBar() {
     return BottomAppBar(
       shape: CircularNotchedRectangle(),
@@ -252,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen>
               icon: Icon(Icons.bar_chart, color: Colors.grey),
               onPressed: () {},
             ),
-            SizedBox(width: 40), // The space for the FAB
+            SizedBox(width: 40),
             IconButton(
               icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
               onPressed: () {},
@@ -267,7 +297,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds the list of expenses sorted by date.
   Widget _buildExpensesByDate(BuildContext context) {
     return Consumer<ExpenseProvider>(
       builder: (context, provider, child) {
@@ -291,7 +320,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds the list of expenses grouped by category.
   Widget _buildExpensesByCategory(BuildContext context) {
     return Consumer<ExpenseProvider>(
       builder: (context, provider, child) {
@@ -303,7 +331,6 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           );
         }
-
         var grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
         return ListView(
           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -328,7 +355,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
                 ...entry.value.map((expense) => _buildTransactionItem(context, expense)).toList(),
-
               ],
             );
           }).toList(),
@@ -337,14 +363,21 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds a single transaction list item.
+  // --- WIDGET UPDATED WITH NEW LOGIC FOR RANDOM COLORS ---
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
     String categoryName = getCategoryNameById(context, expense.categoryId);
-    IconData icon = categoryIcons[categoryName] ?? Icons.category;
-    bool isIncome = expense.amount > 0;
+    IconData icon = categoryIcons[categoryName] ?? Icons.category; // A generic fallback icon
+
+    // Get the category-specific theme.
+    CategoryTheme theme = categoryThemes[categoryName] ??
+        // If not found, use the HASHING method to pick a consistent "random" color.
+        defaultCategoryThemes[categoryName.hashCode % defaultCategoryThemes.length];
+
     String formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
-    Color amountColor = isIncome ? Colors.green : Colors.black;
-    String amountPrefix = isIncome ? '+' : '-';
+
+    // expense
+    Color amountColor = Colors.red;
+    String amountPrefix = '-';
 
     return Card(
       elevation: 1,
@@ -352,8 +385,8 @@ class _HomeScreenState extends State<HomeScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Color(0xFFE8F5E9),
-          child: Icon(icon, color: Color(0xFF2E9A91)),
+          backgroundColor: theme.backgroundColor, // Use background color from theme
+          child: Icon(icon, color: theme.color),   // Use main color from theme
         ),
         title: Text(
           categoryName,
