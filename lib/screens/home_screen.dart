@@ -1,78 +1,16 @@
+import 'package:expense_manager/screens/tag_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
-import 'dart:math'; // Imported for the hash code logic
+
+// Removed all the redundant constant maps and classes.
 
 import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 import 'add_expense_sheet.dart';
-
-// A simple class to hold the color theme for a category
-class CategoryTheme {
-  final Color color;
-  final Color backgroundColor;
-
-  const CategoryTheme({required this.color, required this.backgroundColor});
-}
-
-// Mapping of category names to their specific icons
-const Map<String, IconData> categoryIcons = {
-  'Food': Icons.fastfood,
-  'Transport': Icons.train,
-  'Shopping': Icons.shopping_bag,
-  'Groceries': Icons.local_grocery_store,
-  'Bills': Icons.receipt,
-  'Entertainment': Icons.movie,
-  'Salary': Icons.attach_money,
-};
-
-// --- Main themes for specific, hardcoded categories ---
-final Map<String, CategoryTheme> categoryThemes = {
-  'Food': CategoryTheme(
-    color: Colors.red[400]!,
-    backgroundColor: Colors.red[50]!,
-  ),
-  'Transport': CategoryTheme(
-    color: Colors.orange[400]!,
-    backgroundColor: Colors.orange[50]!,
-  ),
-  'Shopping': CategoryTheme(
-    color: Colors.blue[400]!,
-    backgroundColor: Colors.blue[50]!,
-  ),
-  'Groceries': CategoryTheme(
-    color: Colors.teal[400]!,
-    backgroundColor: Colors.teal[50]!,
-  ),
-  'Bills': CategoryTheme(
-    color: Colors.purple[400]!,
-    backgroundColor: Colors.purple[50]!,
-  ),
-  'Entertainment': CategoryTheme(
-    color: Colors.brown[400]!,
-    backgroundColor: Colors.brown[50]!,
-  ),
-  'Salary': CategoryTheme(
-    color: Colors.green[700]!,
-    backgroundColor: Colors.green[50]!,
-  ),
-};
-
-// A list of default themes for any new, user-created categories
-final List<CategoryTheme> defaultCategoryThemes = [
-  CategoryTheme(
-    color: Colors.lightBlue[600]!,
-    backgroundColor: Colors.lightBlue[50]!,
-  ),
-  CategoryTheme(color: Colors.pink[400]!, backgroundColor: Colors.pink[50]!),
-  CategoryTheme(color: Colors.amber[700]!, backgroundColor: Colors.amber[50]!),
-  CategoryTheme(
-    color: Colors.indigo[400]!,
-    backgroundColor: Colors.indigo[50]!,
-  ),
-  CategoryTheme(color: Colors.cyan[600]!, backgroundColor: Colors.cyan[50]!),
-];
+import 'category_management_screen.dart'; // Import the category screen
+import '../utils/app_constants.dart'; // <-- Import our single source of truth
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -82,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -134,7 +71,12 @@ class _HomeScreenState extends State<HomeScreen>
               leading: Icon(Icons.category, color: primaryColor),
               title: Text('Manage Categories'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close the drawer
+                // Navigate to the Category Management Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CategoryManagementScreen()),
+                );
               },
             ),
             ListTile(
@@ -142,6 +84,11 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Manage Tags'),
               onTap: () {
                 Navigator.pop(context);
+                // Navigate to the Tag Management Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TagManagementScreen()),
+                );
               },
             ),
           ],
@@ -149,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: CustomScrollView(
         slivers: [
-          // --- 2. The old header is now just the Balance Card below the AppBar ---
           SliverToBoxAdapter(child: _buildBalanceCard(context)),
           SliverToBoxAdapter(child: _buildTabBar()),
           SliverFillRemaining(
@@ -186,7 +132,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- This widget now only builds the balance card ---
   Widget _buildBalanceCard(BuildContext context) {
     final provider = Provider.of<ExpenseProvider>(context);
     final totalBalance = provider.totalBalance;
@@ -278,17 +223,66 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // In lib/screens/home_screen.dart
+
+  // In lib/screens/home_screen.dart
+
   Widget _buildTabBar() {
+    const primaryColor = Color(0xFF2E9A91);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: Color(0xFF2E9A91),
-        labelColor: Colors.black,
-        unselectedLabelColor: Colors.grey,
-        tabs: [
-          Tab(text: "Transactions"), // Renamed for clarity
-          Tab(text: "By Category"),
+      // Adjusted padding for better spacing
+      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Recent Transactions', // A more descriptive title
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 50, // Slightly taller for better touch targets and padding
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(25.0),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              // 1. THIS REMOVES THE WHITE LINE
+              dividerColor: Colors.transparent,
+
+              // 2. THIS ADDS PADDING AROUND THE "PILL" INDICATOR
+              indicatorPadding: const EdgeInsets.all(5.0),
+
+              // The indicator itself remains the same
+              indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: primaryColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]),
+              indicatorSize: TabBarIndicatorSize.tab,
+              // --- ADD THESE TWO LINES TO REMOVE HOVER/SPLASH ---
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              labelColor: Colors.white,
+              labelStyle: TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelColor: Colors.black54,
+              tabs: const [
+                Tab(text: "By Date"),
+                Tab(text: "By Category"),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -369,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen>
             String categoryName = provider.getCategoryForId(entry.key).name;
             double total = entry.value.fold(
               0.0,
-              (double prev, Expense element) => prev + element.amount,
+                  (double prev, Expense element) => prev + element.amount,
             );
 
             return Column(
@@ -400,18 +394,23 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // --- WIDGET UPDATED TO BE CASE-INSENSITIVE AND USE SHARED CONSTANTS ---
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
     final categoryName = provider.getCategoryForId(expense.categoryId).name;
 
-    final IconData icon = categoryIcons[categoryName] ?? Icons.category;
+    // Use the helper to handle any capitalization
+    final formattedName = toTitleCase(categoryName);
+
+    // Get icon and theme using the formatted name for consistent lookups
+    final IconData icon = categoryIcons[formattedName] ?? Icons.category;
     final CategoryTheme theme =
-        categoryThemes[categoryName] ??
-        defaultCategoryThemes[categoryName.hashCode %
-            defaultCategoryThemes.length];
+        categoryThemes[formattedName] ??
+            defaultCategoryThemes[categoryName.hashCode %
+                defaultCategoryThemes.length];
 
     final bool isIncome = expense.amount > 0;
-    final String formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
+    final String formattedDate = DateFormat.yMMMd().format(expense.date);
 
     final Color amountColor = isIncome ? Colors.green[700]! : theme.color;
     final String amountPrefix = isIncome ? '+' : '-';
