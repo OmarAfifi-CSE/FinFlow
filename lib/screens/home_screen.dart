@@ -82,6 +82,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -103,6 +104,21 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          'FinFlow',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
+        ),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, size: 30),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          tooltip: 'Open menu',
+        ),
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -119,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Manage Categories'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigator.pushNamed(context, '/manage_categories');
               },
             ),
             ListTile(
@@ -127,7 +142,6 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Manage Tags'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigator.pushNamed(context, '/manage_tags');
               },
             ),
           ],
@@ -135,7 +149,8 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _buildHeader(context)),
+          // --- 2. The old header is now just the Balance Card below the AppBar ---
+          SliverToBoxAdapter(child: _buildBalanceCard(context)),
           SliverToBoxAdapter(child: _buildTabBar()),
           SliverFillRemaining(
             child: TabBarView(
@@ -171,20 +186,15 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- HEADER WIDGET UPDATED ---
-  Widget _buildHeader(BuildContext context) {
+  // --- This widget now only builds the balance card ---
+  Widget _buildBalanceCard(BuildContext context) {
     final provider = Provider.of<ExpenseProvider>(context);
     final totalBalance = provider.totalBalance;
     final totalIncome = provider.totalIncome;
     final totalExpenses = provider.totalExpenses;
 
     return Container(
-      padding: const EdgeInsets.only(
-        top: 40.0,
-        left: 20.0,
-        right: 20.0,
-        bottom: 20.0,
-      ),
+      padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
         color: Color(0xFF2E9A91),
         borderRadius: BorderRadius.only(
@@ -192,74 +202,49 @@ class _HomeScreenState extends State<HomeScreen>
           bottomRight: Radius.circular(40),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white, size: 28),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                tooltip: 'Open menu',
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF38A39A),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Total Balance',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 16,
               ),
-              // --- APP NAME ADDED HERE ---
-              const Text(
-                'FinFlow',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF38A39A),
-              borderRadius: BorderRadius.circular(20),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 10),
+            Text(
+              '\$${totalBalance.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Total Balance',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 16,
-                  ),
+                _buildIncomeExpense(
+                  'Income',
+                  '\$${totalIncome.toStringAsFixed(2)}',
+                  Icons.arrow_downward,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  '\$${totalBalance.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildIncomeExpense(
-                      'Income',
-                      '\$${totalIncome.toStringAsFixed(2)}',
-                      Icons.arrow_downward,
-                    ),
-                    _buildIncomeExpense(
-                      'Expenses',
-                      '\$${totalExpenses.toStringAsFixed(2)}',
-                      Icons.arrow_upward,
-                    ),
-                  ],
+                _buildIncomeExpense(
+                  'Expenses',
+                  '\$${totalExpenses.toStringAsFixed(2)}',
+                  Icons.arrow_upward,
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -302,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen>
         labelColor: Colors.black,
         unselectedLabelColor: Colors.grey,
         tabs: [
-          Tab(text: "By Date"),
+          Tab(text: "Transactions"), // Renamed for clarity
           Tab(text: "By Category"),
         ],
       ),
@@ -428,9 +413,7 @@ class _HomeScreenState extends State<HomeScreen>
     final bool isIncome = expense.amount > 0;
     final String formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
 
-    // --- COLOR LOGIC CORRECTED ---
-    // Use green for income, and the specific category theme color for expenses.
-    final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
+    final Color amountColor = isIncome ? Colors.green[700]! : theme.color;
     final String amountPrefix = isIncome ? '+' : '-';
 
     return Card(
