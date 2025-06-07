@@ -29,7 +29,13 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Expense Tracker',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(fontFamily: 'Inter'),
+        theme: ThemeData(
+          primarySwatch: Colors.teal,
+          fontFamily: 'Inter',
+          // Defining a custom color scheme for the TabBar
+          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
+              .copyWith(secondary: Colors.white),
+        ),
         initialRoute: '/',
         routes: {
           '/': (context) => OnboardingScreen(),

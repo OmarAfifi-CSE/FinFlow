@@ -14,9 +14,10 @@ class ExpenseProvider with ChangeNotifier {
   final List<ExpenseCategory> _categories = [
     ExpenseCategory(id: '1', name: 'Food', isDefault: true),
     ExpenseCategory(id: '2', name: 'Transport', isDefault: true),
-    ExpenseCategory(id: '3', name: 'Entertainment', isDefault: true),
-    ExpenseCategory(id: '4', name: 'Office', isDefault: true),
-    ExpenseCategory(id: '5', name: 'Gym', isDefault: true),
+    ExpenseCategory(id: '3', name: 'Shopping', isDefault: true),
+    ExpenseCategory(id: '4', name: 'Groceries', isDefault: true),
+    ExpenseCategory(id: '5', name: 'Bills', isDefault: true),
+    ExpenseCategory(id: '6', name: 'Entertainment', isDefault: true),
   ];
 
   // List of tags
