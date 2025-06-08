@@ -17,7 +17,6 @@ class AddExpenseScreen extends StatefulWidget {
 
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   late TextEditingController _amountController;
-  late TextEditingController _payeeController;
   late TextEditingController _noteController;
   String? _selectedCategoryId;
   String? _selectedTagId;
@@ -27,11 +26,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void initState() {
     super.initState();
     _amountController = TextEditingController(
-        text: widget.initialExpense?.amount.toString() ?? '');
-    _payeeController =
-        TextEditingController(text: widget.initialExpense?.payee ?? '');
-    _noteController =
-        TextEditingController(text: widget.initialExpense?.note ?? '');
+      text: widget.initialExpense?.amount.toString() ?? '',
+    );
+    _noteController = TextEditingController(
+      text: widget.initialExpense?.note ?? '',
+    );
     _selectedDate = widget.initialExpense?.date ?? DateTime.now();
     _selectedCategoryId = widget.initialExpense?.categoryId;
     _selectedTagId = widget.initialExpense?.tag;
@@ -43,28 +42,33 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            widget.initialExpense == null ? 'Add Expense' : 'Edit Expense'),
+          widget.initialExpense == null ? 'Add Expense' : 'Edit Expense',
+        ),
         backgroundColor: Colors.deepPurple[400],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            buildTextField(_amountController, 'Amount',
-                TextInputType.numberWithOptions(decimal: true)),
-            buildTextField(_payeeController, 'Payee', TextInputType.text),
+            buildTextField(
+              _amountController,
+              'Amount',
+              TextInputType.numberWithOptions(decimal: true),
+            ),
             buildTextField(_noteController, 'note', TextInputType.text),
             buildDateField(_selectedDate),
             // buildCategoryDropdown(expenseProvider),
             // buildTagDropdown(expenseProvider),
             Padding(
               padding: const EdgeInsets.only(
-                  bottom: 8.0), // Adjust the padding as needed
+                bottom: 8.0,
+              ), // Adjust the padding as needed
               child: buildCategoryDropdown(expenseProvider),
             ),
             Padding(
               padding: const EdgeInsets.only(
-                  bottom: 8.0), // Adjust the padding as needed
+                bottom: 8.0,
+              ), // Adjust the padding as needed
               child: buildTagDropdown(expenseProvider),
             ),
           ],
@@ -84,35 +88,41 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       ),
     );
   }
+
   // Helper methods for building the form elements go here (omitted for brevity)
 
   void _saveExpense() {
     if (_amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please fill in all required fields!')));
+        SnackBar(content: Text('Please fill in all required fields!')),
+      );
       return;
     }
 
     final expense = Expense(
-      id: widget.initialExpense?.id ??
-          DateTime.now().toString(), // Assuming you generate IDs like this
+      id: widget.initialExpense?.id ?? DateTime.now().toString(),
+      // Assuming you generate IDs like this
       amount: double.parse(_amountController.text),
       categoryId: _selectedCategoryId!,
-      payee: _payeeController.text,
       note: _noteController.text,
       date: _selectedDate,
       tag: _selectedTagId!,
     );
 
     // Calling the provider to add or update the expense
-    Provider.of<ExpenseProvider>(context, listen: false)
-        .addOrUpdateExpense(expense);
+    Provider.of<ExpenseProvider>(
+      context,
+      listen: false,
+    ).addOrUpdateExpense(expense);
     Navigator.pop(context);
   }
 
   // Helper method to build a text field
   Widget buildTextField(
-      TextEditingController controller, String label, TextInputType type) {
+    TextEditingController controller,
+    String label,
+    TextInputType type,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
@@ -126,7 +136,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-// Helper method to build the date picker field
+  // Helper method to build the date picker field
   Widget buildDateField(DateTime selectedDate) {
     return ListTile(
       title: Text("Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
@@ -147,7 +157,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-// Helper method to build the category dropdown
+  // Helper method to build the category dropdown
   Widget buildCategoryDropdown(ExpenseProvider provider) {
     return DropdownButtonFormField<String>(
       value: _selectedCategoryId,
@@ -155,29 +165,31 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         if (newValue == 'New') {
           showDialog(
             context: context,
-            builder: (context) => AddCategoryDialog(onAdd: (newCategory) {
-              setState(() {
-                _selectedCategoryId =
-                    newCategory.id; // Automatically select the new category
-                provider.addCategory(
-                    newCategory); // Add to provider, assuming this method exists
-              });
-            }),
+            builder: (context) => AddCategoryDialog(
+              onAdd: (newCategory) {
+                setState(() {
+                  _selectedCategoryId =
+                      newCategory.id; // Automatically select the new category
+                  provider.addCategory(
+                    newCategory,
+                  ); // Add to provider, assuming this method exists
+                });
+              },
+            ),
           );
         } else {
           setState(() => _selectedCategoryId = newValue);
         }
       },
-      items: provider.categories.map<DropdownMenuItem<String>>((category) {
-        return DropdownMenuItem<String>(
-          value: category.id,
-          child: Text(category.name),
-        );
-      }).toList()
-        ..add(DropdownMenuItem(
-          value: "New",
-          child: Text("Add New Category"),
-        )),
+      items:
+          provider.categories.map<DropdownMenuItem<String>>((category) {
+            return DropdownMenuItem<String>(
+              value: category.id,
+              child: Text(category.name),
+            );
+          }).toList()..add(
+            DropdownMenuItem(value: "New", child: Text("Add New Category")),
+          ),
       decoration: InputDecoration(
         labelText: 'Category',
         border: OutlineInputBorder(),
@@ -185,7 +197,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-// Helper method to build the tag dropdown
+  // Helper method to build the tag dropdown
   Widget buildTagDropdown(ExpenseProvider provider) {
     return DropdownButtonFormField<String>(
       value: _selectedTagId,
@@ -193,26 +205,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         if (newValue == 'New') {
           showDialog(
             context: context,
-            builder: (context) => AddTagDialog(onAdd: (newTag) {
-              provider.addTag(newTag); // Assuming you have an `addTag` method.
-              setState(
-                      () => _selectedTagId = newTag.id); // Update selected tag ID
-            }),
+            builder: (context) => AddTagDialog(
+              onAdd: (newTag) {
+                provider.addTag(
+                  newTag,
+                ); // Assuming you have an `addTag` method.
+                setState(
+                  () => _selectedTagId = newTag.id,
+                ); // Update selected tag ID
+              },
+            ),
           );
         } else {
           setState(() => _selectedTagId = newValue);
         }
       },
-      items: provider.tags.map<DropdownMenuItem<String>>((tag) {
-        return DropdownMenuItem<String>(
-          value: tag.id,
-          child: Text(tag.name),
-        );
-      }).toList()
-        ..add(DropdownMenuItem(
-          value: "New",
-          child: Text("Add New Tag"),
-        )),
+      items:
+          provider.tags.map<DropdownMenuItem<String>>((tag) {
+              return DropdownMenuItem<String>(
+                value: tag.id,
+                child: Text(tag.name),
+              );
+            }).toList()
+            ..add(DropdownMenuItem(value: "New", child: Text("Add New Tag"))),
       decoration: InputDecoration(
         labelText: 'Tag',
         border: OutlineInputBorder(),

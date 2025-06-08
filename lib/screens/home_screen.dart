@@ -75,7 +75,9 @@ class _HomeScreenState extends State<HomeScreen>
                 // Navigate to the Category Management Screen
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CategoryManagementScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => CategoryManagementScreen(),
+                  ),
                 );
               },
             ),
@@ -87,7 +89,9 @@ class _HomeScreenState extends State<HomeScreen>
                 // Navigate to the Tag Management Screen
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TagManagementScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => TagManagementScreen(),
+                  ),
                 );
               },
             ),
@@ -111,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
+        shape: CircleBorder(),
         onPressed: () {
           showModalBottomSheet(
             context: context,
@@ -223,21 +228,16 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // In lib/screens/home_screen.dart
-
-  // In lib/screens/home_screen.dart
-
   Widget _buildTabBar() {
     const primaryColor = Color(0xFF2E9A91);
 
     return Padding(
-      // Adjusted padding for better spacing
       padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Recent Transactions', // A more descriptive title
+            'Recent Transactions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -246,32 +246,27 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           const SizedBox(height: 16),
           Container(
-            height: 50, // Slightly taller for better touch targets and padding
+            height: 50,
             decoration: BoxDecoration(
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(25.0),
             ),
             child: TabBar(
               controller: _tabController,
-              // 1. THIS REMOVES THE WHITE LINE
               dividerColor: Colors.transparent,
-
-              // 2. THIS ADDS PADDING AROUND THE "PILL" INDICATOR
               indicatorPadding: const EdgeInsets.all(5.0),
-
-              // The indicator itself remains the same
               indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: primaryColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ]),
+                borderRadius: BorderRadius.circular(20.0),
+                color: primaryColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
               indicatorSize: TabBarIndicatorSize.tab,
-              // --- ADD THESE TWO LINES TO REMOVE HOVER/SPLASH ---
               splashFactory: NoSplash.splashFactory,
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelColor: Colors.white,
@@ -363,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen>
             String categoryName = provider.getCategoryForId(entry.key).name;
             double total = entry.value.fold(
               0.0,
-                  (double prev, Expense element) => prev + element.amount,
+              (double prev, Expense element) => prev + element.amount,
             );
 
             return Column(
@@ -394,47 +389,58 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- WIDGET UPDATED TO BE CASE-INSENSITIVE AND USE SHARED CONSTANTS ---
+  // --- WIDGET UPDATED TO BE TAPPABLE FOR EDITING ---
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
     final categoryName = provider.getCategoryForId(expense.categoryId).name;
 
-    // Use the helper to handle any capitalization
     final formattedName = toTitleCase(categoryName);
 
-    // Get icon and theme using the formatted name for consistent lookups
     final IconData icon = categoryIcons[formattedName] ?? Icons.category;
     final CategoryTheme theme =
         categoryThemes[formattedName] ??
-            defaultCategoryThemes[categoryName.hashCode %
-                defaultCategoryThemes.length];
+        defaultCategoryThemes[categoryName.hashCode %
+            defaultCategoryThemes.length];
 
     final bool isIncome = expense.amount > 0;
     final String formattedDate = DateFormat.yMMMd().format(expense.date);
 
-    final Color amountColor = isIncome ? Colors.green[700]! : theme.color;
+    final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
     final String amountPrefix = isIncome ? '+' : '-';
 
-    return Card(
-      elevation: 1,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: theme.backgroundColor,
-          child: Icon(icon, color: theme.color),
-        ),
-        title: Text(
-          expense.payee.isNotEmpty ? expense.payee : categoryName,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(categoryName),
-        trailing: Text(
-          '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: amountColor,
-            fontSize: 16,
+    // --- WRAPPED IN INKWELL TO MAKE TAPPABLE FOR EDITING ---
+    return InkWell(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (context) {
+            // Pass the specific expense to the sheet for editing
+            return AddExpenseSheet(expense: expense);
+          },
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Card(
+        elevation: 1,
+        margin: EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: theme.backgroundColor,
+            child: Icon(icon, color: theme.color),
+          ),
+          title: Text(categoryName),
+          trailing: Text(
+            '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: amountColor,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
