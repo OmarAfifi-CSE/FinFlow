@@ -1,18 +1,17 @@
 import 'package:expense_manager/screens/tag_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
-
-// Removed all the redundant constant maps and classes.
 
 import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 import 'add_expense_sheet.dart';
-import 'category_management_screen.dart'; // Import the category screen
-import '../utils/app_constants.dart'; // <-- Import our single source of truth
+import 'category_management_screen.dart';
+import '../utils/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -21,6 +20,16 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // App pages
+  int _selectedIndex = 0;
+
+  void _onPageTapped(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void initState() {
@@ -32,6 +41,20 @@ class _HomeScreenState extends State<HomeScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Build the currently selected page.
+  Widget _buildCurrentPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return _buildHomePageContent();
+      case 1:
+        return CategoryManagementScreen();
+      case 2:
+        return TagManagementScreen();
+      default:
+        return _buildHomePageContent();
+    }
   }
 
   @override
@@ -60,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(color: primaryColor),
               child: Text(
                 'Menu',
@@ -68,81 +91,74 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             ListTile(
-              leading: Icon(Icons.category, color: primaryColor),
-              title: Text('Manage Categories'),
+              leading: const Icon(Icons.home, color: primaryColor),
+              title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // Navigate to the Category Management Screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CategoryManagementScreen(),
-                  ),
-                );
+                Navigator.pop(context);
+                _onPageTapped(0);
               },
             ),
             ListTile(
-              leading: Icon(Icons.tag, color: primaryColor),
-              title: Text('Manage Tags'),
+              leading: const Icon(Icons.category, color: primaryColor),
+              title: const Text('Manage Categories'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigate to the Tag Management Screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TagManagementScreen(),
-                  ),
-                );
+                _onPageTapped(1);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.tag, color: primaryColor),
+              title: const Text('Manage Tags'),
+              onTap: () {
+                Navigator.pop(context);
+                _onPageTapped(2);
               },
             ),
           ],
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildBalanceCard(context)),
-          SliverToBoxAdapter(child: _buildTabBar()),
-          SliverFillRemaining(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildExpensesByDate(context),
-                _buildExpensesByCategory(context),
-              ],
-            ),
-          ),
-        ],
-      ),
+
+      body: _buildCurrentPage(),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         onPressed: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            builder: (context) {
-              return AddExpenseSheet();
-            },
+            builder: (context) => AddExpenseSheet(),
           );
         },
         tooltip: 'Add Transaction',
-        child: Icon(Icons.add, size: 30),
-        backgroundColor: const Color(0xFF2E9A91),
+        backgroundColor: primaryColor,
         elevation: 4.0,
+        child: const Icon(Icons.add, size: 30),
       ),
       bottomNavigationBar: _buildBottomAppBar(),
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context) {
+  Widget _buildHomePageContent() {
     final provider = Provider.of<ExpenseProvider>(context);
-    final totalBalance = provider.totalBalance;
-    final totalIncome = provider.totalIncome;
-    final totalExpenses = provider.totalExpenses;
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildBalanceCard(provider)),
+        SliverToBoxAdapter(child: _buildTabBar()),
+        SliverFillRemaining(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildExpensesByDate(context),
+              _buildExpensesByCategory(context),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildBalanceCard(ExpenseProvider provider) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -164,13 +180,13 @@ class _HomeScreenState extends State<HomeScreen>
             Text(
               'Total Balance',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              '\$${totalBalance.toStringAsFixed(2)}',
+              '\$${provider.totalBalance.toStringAsFixed(2)}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 40,
@@ -183,12 +199,12 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 _buildIncomeExpense(
                   'Income',
-                  '\$${totalIncome.toStringAsFixed(2)}',
+                  '\$${provider.totalIncome.toStringAsFixed(2)}',
                   Icons.arrow_downward,
                 ),
                 _buildIncomeExpense(
                   'Expenses',
-                  '\$${totalExpenses.toStringAsFixed(2)}',
+                  '\$${provider.totalExpenses.toStringAsFixed(2)}',
                   Icons.arrow_upward,
                 ),
               ],
@@ -210,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen>
             Text(
               title,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 14,
               ),
             ),
@@ -230,7 +246,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildTabBar() {
     const primaryColor = Color(0xFF2E9A91);
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
       child: Column(
@@ -260,9 +275,9 @@ class _HomeScreenState extends State<HomeScreen>
                 color: primaryColor,
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
+                    color: primaryColor.withValues(alpha: 0.3),
                     blurRadius: 8,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -270,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen>
               splashFactory: NoSplash.splashFactory,
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelColor: Colors.white,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelColor: Colors.black54,
               tabs: const [
                 Tab(text: "By Date"),
@@ -279,38 +294,6 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomAppBar() {
-    return BottomAppBar(
-      shape: CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      child: Container(
-        height: 60,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.home, color: Color(0xFF2E9A91)),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: Icon(Icons.bar_chart, color: Colors.grey),
-              onPressed: () {},
-            ),
-            SizedBox(width: 40),
-            IconButton(
-              icon: Icon(Icons.account_balance_wallet, color: Colors.grey),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: Icon(Icons.person, color: Colors.grey),
-              onPressed: () {},
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -329,12 +312,10 @@ class _HomeScreenState extends State<HomeScreen>
         final sortedExpenses = provider.expenses
           ..sort((a, b) => b.date.compareTo(a.date));
         return ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: sortedExpenses.length,
-          itemBuilder: (context, index) {
-            final expense = sortedExpenses[index];
-            return _buildTransactionItem(context, expense);
-          },
+          itemBuilder: (context, index) =>
+              _buildTransactionItem(context, sortedExpenses[index]),
         );
       },
     );
@@ -353,14 +334,13 @@ class _HomeScreenState extends State<HomeScreen>
         }
         var grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
         return ListView(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           children: grouped.entries.map((entry) {
             String categoryName = provider.getCategoryForId(entry.key).name;
             double total = entry.value.fold(
               0.0,
               (double prev, Expense element) => prev + element.amount,
             );
-
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -371,16 +351,16 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   child: Text(
                     "$categoryName - Total: \$${total.abs().toStringAsFixed(2)}",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
                 ),
-                ...entry.value
-                    .map((expense) => _buildTransactionItem(context, expense))
-                    .toList(),
+                ...entry.value.map(
+                  (expense) => _buildTransactionItem(context, expense),
+                ),
               ],
             );
           }).toList(),
@@ -389,26 +369,19 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- WIDGET UPDATED TO BE TAPPABLE FOR EDITING ---
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
     final categoryName = provider.getCategoryForId(expense.categoryId).name;
-
     final formattedName = toTitleCase(categoryName);
-
     final IconData icon = categoryIcons[formattedName] ?? Icons.category;
     final CategoryTheme theme =
         categoryThemes[formattedName] ??
         defaultCategoryThemes[categoryName.hashCode %
             defaultCategoryThemes.length];
-
     final bool isIncome = expense.amount > 0;
-    final String formattedDate = DateFormat.yMMMd().format(expense.date);
-
     final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
     final String amountPrefix = isIncome ? '+' : '-';
 
-    // --- WRAPPED IN INKWELL TO MAKE TAPPABLE FOR EDITING ---
     return InkWell(
       onTap: () {
         showModalBottomSheet(
@@ -417,16 +390,13 @@ class _HomeScreenState extends State<HomeScreen>
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          builder: (context) {
-            // Pass the specific expense to the sheet for editing
-            return AddExpenseSheet(expense: expense);
-          },
+          builder: (context) => AddExpenseSheet(expense: expense),
         );
       },
       borderRadius: BorderRadius.circular(12),
       child: Card(
         elevation: 1,
-        margin: EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
           leading: CircleAvatar(
@@ -442,6 +412,56 @@ class _HomeScreenState extends State<HomeScreen>
               fontSize: 16,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomAppBar() {
+    return BottomAppBar(
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8.0,
+      height: 65,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [_buildNavItem(icon: Icons.home, index: 0)],
+            ),
+          ),
+          const SizedBox(width: 60),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(icon: Icons.category, index: 1),
+                _buildNavItem(icon: Icons.tag, index: 2),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({required IconData icon, required int index}) {
+    return InkWell(
+      onTap: () => _onPageTapped(index),
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              color: _selectedIndex == index
+                  ? const Color(0xFF2E9A91)
+                  : Colors.grey[600],
+            ),
+          ],
         ),
       ),
     );

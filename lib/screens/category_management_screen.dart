@@ -2,22 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/expense_category.dart';
 import '../providers/expense_provider.dart';
-import '../utils/app_constants.dart'; // Make sure this import is correct
+import '../utils/app_constants.dart';
 
 class CategoryManagementScreen extends StatelessWidget {
+  const CategoryManagementScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF2E9A91);
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text("Manage Categories"),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
       body: Consumer<ExpenseProvider>(
         builder: (context, consumerProvider, child) {
           final allCategories = consumerProvider.categories;
@@ -56,7 +51,6 @@ class CategoryManagementScreen extends StatelessWidget {
                 confirmDismiss: (direction) async {
                   return await _showDeleteConfirmationDialog(context, category);
                 },
-                // UPDATED: This now calls our new helper method
                 onDismissed: (direction) {
                   _deleteCategoryAndShowSnackBar(context, provider, category);
                 },
@@ -78,14 +72,12 @@ class CategoryManagementScreen extends StatelessWidget {
                     trailing: IconButton(
                       icon: Icon(Icons.delete_outline, color: Colors.red[700]),
                       tooltip: 'Delete Category',
-                      // UPDATED: This also calls our new helper method
                       onPressed: () async {
                         final bool? shouldDelete =
                             await _showDeleteConfirmationDialog(
                               context,
                               category,
                             );
-                        // Check if context is still valid before using it, a good practice after an await
                         if (shouldDelete == true && context.mounted) {
                           _deleteCategoryAndShowSnackBar(
                             context,
@@ -140,15 +132,11 @@ class CategoryManagementScreen extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(ctx).pop(false);
-            },
+            onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
             child: Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(ctx).pop(true);
-            },
+            onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),

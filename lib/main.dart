@@ -3,9 +3,7 @@ import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/expense_provider.dart';
-import 'screens/category_management_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/tag_management_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 Future<void> main() async {
@@ -18,7 +16,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   final LocalStorage localStorage;
 
-  const MyApp({Key? key, required this.localStorage}) : super(key: key);
+  const MyApp({super.key, required this.localStorage});
 
   @override
   Widget build(BuildContext context) {
@@ -27,21 +25,19 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExpenseProvider(localStorage)),
       ],
       child: MaterialApp(
-        title: 'Expense Tracker',
+        title: 'FinFlow',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.teal,
           fontFamily: 'Inter',
-          // Defining a custom color scheme for the TabBar
-          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
-              .copyWith(secondary: Colors.white),
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.teal,
+          ).copyWith(secondary: Colors.white),
         ),
         initialRoute: '/',
         routes: {
           '/': (context) => OnboardingScreen(),
-          '/home_screen': (context) => HomeScreen(),
-          '/manage_categories': (context) => CategoryManagementScreen(),
-          '/manage_tags': (context) => TagManagementScreen(),
+          '/home': (context) => HomeScreen(),
         },
       ),
     );

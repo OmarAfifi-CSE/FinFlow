@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/tag.dart'; // Ensure you have a Tag model
+import '../models/tag.dart';
 import '../providers/expense_provider.dart';
-import '../utils/app_constants.dart'; // For the toTitleCase helper
+import '../utils/app_constants.dart';
 
 class TagManagementScreen extends StatelessWidget {
+  const TagManagementScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF2E9A91);
-    // Grab the provider once here to pass into our helper methods
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
+    // FIX: Removed the Scaffold and AppBar. This widget now only returns
+    // the content to be displayed.
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text("Manage Tags"),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
       body: Consumer<ExpenseProvider>(
         builder: (context, consumerProvider, child) {
           final allTags = consumerProvider.tags;
@@ -61,9 +58,8 @@ class TagManagementScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ListTile(
-                    // Using a standard tag icon for all tags
                     leading: CircleAvatar(
-                      backgroundColor: primaryColor.withOpacity(0.15),
+                      backgroundColor: primaryColor.withValues(alpha: 0.15),
                       child: Icon(Icons.tag, size: 20, color: primaryColor),
                     ),
                     title: Text(
@@ -97,7 +93,6 @@ class TagManagementScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to show the delete confirmation dialog for a Tag
   Future<bool?> _showDeleteConfirmationDialog(BuildContext context, Tag tag) {
     return showDialog<bool>(
       context: context,
@@ -109,22 +104,17 @@ class TagManagementScreen extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(ctx).pop(false);
-            },
+            onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
             child: Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(ctx).pop(true);
-            },
+            onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
     );
   }
 
-  // Helper method that deletes the tag and shows a confirmation SnackBar
   void _deleteTagAndShowSnackBar(
     BuildContext context,
     ExpenseProvider provider,
@@ -140,7 +130,6 @@ class TagManagementScreen extends StatelessWidget {
     );
   }
 
-  // Helper method for showing the Add Tag dialog
   void _showAddTagDialog(BuildContext context, ExpenseProvider provider) {
     final TextEditingController tagNameController = TextEditingController();
     showDialog(
