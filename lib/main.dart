@@ -1,28 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/expense_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 Future<void> main() async {
+  // Ensure Flutter is initialized.
   WidgetsFlutterBinding.ensureInitialized();
-  await initLocalStorage();
+  // Get instance of SharedPreferences.
+  final prefs = await SharedPreferences.getInstance();
+  // Check if onboarding has been completed. Default to false if not found.
+  final bool onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
-  runApp(MyApp(localStorage: localStorage));
+  runApp(MyApp(prefs: prefs, onboardingComplete: onboardingComplete));
 }
 
 class MyApp extends StatelessWidget {
-  final LocalStorage localStorage;
+  final SharedPreferences prefs;
+  final bool onboardingComplete;
 
-  const MyApp({super.key, required this.localStorage});
+  const MyApp({
+    super.key,
+    required this.prefs,
+    required this.onboardingComplete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ExpenseProvider(localStorage)),
+        // Pass the SharedPreferences instance to your provider.
+        ChangeNotifierProvider(create: (_) => ExpenseProvider(prefs)),
       ],
       child: MaterialApp(
         title: 'FinFlow',
@@ -34,7 +44,8 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
           ).copyWith(secondary: Colors.white),
         ),
-        initialRoute: '/',
+        // Use the flag to determine the initial route.
+        initialRoute: onboardingComplete ? '/home' : '/',
         routes: {
           '/': (context) => OnboardingScreen(),
           '/home': (context) => HomeScreen(),

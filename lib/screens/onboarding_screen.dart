@@ -1,5 +1,6 @@
 import 'package:expense_manager/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -39,14 +40,20 @@ class OnboardingScreen extends StatelessWidget {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (context) => HomeScreen())),
+              // Inside your ElevatedButton's onPressed:
+              onPressed: () async {
+                // Get the instance of SharedPreferences
+                final prefs = await SharedPreferences.getInstance();
+                // Save the flag
+                await prefs.setBool('onboarding_complete', true);
+                // Navigate to the home screen and remove the onboarding screen from the history
+                Navigator.of(context).pushReplacementNamed('/home');
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xff438883),
                 foregroundColor: Colors.white,
                 elevation: 5,
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 textStyle: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w500,

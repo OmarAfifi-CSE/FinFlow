@@ -37,7 +37,7 @@ dependencies:
   intl: ^0.20.2
   provider: ^6.1.4
   collection: ^1.19.1
-  localstorage: ^6.0.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

@@ -31,7 +31,6 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
   @override
   void initState() {
     super.initState();
-    // Get provider once to perform validation check
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
     if (widget.expense != null) {
@@ -63,29 +62,23 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
       _noteController = TextEditingController(text: widget.expense?.note ?? '');
       _selectedDate = widget.expense?.date ?? DateTime.now();
 
-      // --- FIX: VALIDATE CATEGORY AND TAG IDs BEFORE ASSIGNING ---
       final savedCategoryId = widget.expense?.categoryId;
-      // Check if a category with this ID still exists in the provider's list
       if (provider.categories.any((cat) => cat.id == savedCategoryId)) {
         _selectedCategoryId = savedCategoryId;
       } else {
-        _selectedCategoryId = null; // If not, set to null to avoid crash
+        _selectedCategoryId = null;
       }
 
       final savedTagId = widget.expense?.tag;
-      // Check if a tag with this ID still exists in the provider's list
       if (provider.tags.any((tag) => tag.id == savedTagId)) {
         _selectedTagId = savedTagId;
       } else {
-        _selectedTagId = null; // If not, set to null to avoid crash
+        _selectedTagId = null;
       }
-      // --- END OF FIX ---
     } else {
       _amountController = TextEditingController();
-      _noteController = TextEditingController(text: widget.expense?.note ?? '');
-      _selectedDate = widget.expense?.date ?? DateTime.now();
-      _selectedCategoryId = widget.expense?.categoryId;
-      _selectedTagId = widget.expense?.tag;
+      _noteController = TextEditingController();
+      _selectedDate = DateTime.now();
     }
   }
 
@@ -121,7 +114,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
               textAlign: TextAlign.center,
@@ -129,13 +122,13 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             buildTransactionTypeToggle(),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildTextField(
               _amountController,
               'Amount',
-              TextInputType.numberWithOptions(decimal: true),
+              const TextInputType.numberWithOptions(decimal: true),
             ),
             buildTextField(
               _noteController,
@@ -143,11 +136,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               TextInputType.text,
             ),
             buildDateField(context, _selectedDate),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             buildCategoryDropdown(context.watch<ExpenseProvider>()),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildTagDropdown(context.watch<ExpenseProvider>()),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
@@ -160,20 +153,42 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                   textAlign: TextAlign.center,
                 ),
               ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E9A91),
-                foregroundColor: Colors.white,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E9A91),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _saveTransaction,
+                    child: const Text(
+                      'Save Transaction',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              onPressed: _saveTransaction,
-              child: Text(
-                'Save Transaction',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+                if (widget.expense != null) ...[
+                  const SizedBox(width: 16),
+                  IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red[50],
+                      foregroundColor: Colors.red[700],
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    onPressed: _deleteTransaction,
+                    icon: const Icon(Icons.delete_forever),
+                    tooltip: 'Delete Transaction',
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -202,7 +217,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
             BoxShadow(
               color: indicatorColor.withOpacity(0.3),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -210,7 +225,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         labelColor: Colors.white,
-        labelStyle: TextStyle(fontWeight: FontWeight.bold),
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelColor: Colors.black54,
         tabs: const [
           Tab(text: "Expense"),
@@ -254,6 +269,38 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     Navigator.pop(context);
   }
 
+  // --- FIX: Added method to handle transaction deletion ---
+  void _deleteTransaction() async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Are you sure?'),
+        content: const Text('This transaction will be permanently deleted.'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          TextButton(
+            child: Text('Delete', style: TextStyle(color: Colors.red[700])),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    // Check if the user confirmed the deletion.
+    if (shouldDelete == true) {
+      // Use the provider to delete the expense.
+      Provider.of<ExpenseProvider>(
+        context,
+        listen: false,
+      ).deleteExpense(widget.expense!.id);
+      // Pop the bottom sheet to go back to the home screen.
+      Navigator.pop(context);
+    }
+  }
+
   Widget buildTextField(
     TextEditingController controller,
     String label,
@@ -282,7 +329,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
           borderRadius: BorderRadius.circular(12),
         ),
         title: Text("Date: ${DateFormat.yMMMd().format(selectedDate)}"),
-        trailing: Icon(Icons.calendar_today, color: const Color(0xFF2E9A91)),
+        trailing: const Icon(Icons.calendar_today, color: Color(0xFF2E9A91)),
         onTap: () async {
           final DateTime? picked = await showDatePicker(
             context: context,
@@ -325,11 +372,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               child: Text(category.name),
             );
           }).toList()..add(
-            DropdownMenuItem(
+            const DropdownMenuItem(
               value: "New",
               child: Text(
                 "＋ Add New Category",
-                style: TextStyle(color: const Color(0xFF2E9A91)),
+                style: TextStyle(color: Color(0xFF2E9A91)),
               ),
             ),
           ),
@@ -365,11 +412,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               child: Text(tag.name),
             );
           }).toList()..add(
-            DropdownMenuItem(
+            const DropdownMenuItem(
               value: "New",
               child: Text(
                 "＋ Add New Tag",
-                style: TextStyle(color: const Color(0xFF2E9A91)),
+                style: TextStyle(color: Color(0xFF2E9A91)),
               ),
             ),
           ),

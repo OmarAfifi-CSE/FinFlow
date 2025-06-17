@@ -16,12 +16,41 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
+// Helper class for the sticky header.
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+
+  final Widget _tabBar;
+
+  // The height of the tab bar section
+  @override
+  double get minExtent => 140;
+
+  @override
+  double get maxExtent => 150;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: Colors.grey[100], // Match the Scaffold's background color
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
+  }
+}
+
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  // App pages
   int _selectedIndex = 0;
 
   void _onPageTapped(int index) {
@@ -43,7 +72,6 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  // Build the currently selected page.
   Widget _buildCurrentPage() {
     switch (_selectedIndex) {
       case 0:
@@ -64,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
+      // FIX: Reverted to the original, simple AppBar
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
@@ -79,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen>
           tooltip: 'Open menu',
         ),
       ),
+      // FIX: Reverted to the original, non-conditional Drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -117,9 +147,7 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
       ),
-
       body: _buildCurrentPage(),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -139,22 +167,79 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // --- This is the key fix for scrolling ---
   Widget _buildHomePageContent() {
     final provider = Provider.of<ExpenseProvider>(context);
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(child: _buildBalanceCard(provider)),
-        SliverToBoxAdapter(child: _buildTabBar()),
-        SliverFillRemaining(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildExpensesByDate(context),
-              _buildExpensesByCategory(context),
-            ],
+    return NestedScrollView(
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        // These are the slivers that will scroll away.
+        return <Widget>[
+          SliverToBoxAdapter(child: _buildBalanceCard(provider)),
+          // This makes the TabBar header stick to the top.
+          SliverPersistentHeader(
+            delegate: _SliverAppBarDelegate(_buildTabBar()),
+            pinned: true,
           ),
+        ];
+      },
+      // The body is the content of the tabs, which can now scroll freely.
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildExpensesByDate(context),
+          _buildExpensesByCategory(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomAppBar() {
+    return BottomAppBar(
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8.0,
+      height: 65,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [_buildNavItem(icon: Icons.home, index: 0)],
+            ),
+          ),
+          const SizedBox(width: 60),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(icon: Icons.category, index: 1),
+                _buildNavItem(icon: Icons.tag, index: 2),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({required IconData icon, required int index}) {
+    return InkWell(
+      onTap: () => _onPageTapped(index),
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              color: _selectedIndex == index
+                  ? const Color(0xFF2E9A91)
+                  : Colors.grey[600],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -412,56 +497,6 @@ class _HomeScreenState extends State<HomeScreen>
               fontSize: 16,
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomAppBar() {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      height: 65,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [_buildNavItem(icon: Icons.home, index: 0)],
-            ),
-          ),
-          const SizedBox(width: 60),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(icon: Icons.category, index: 1),
-                _buildNavItem(icon: Icons.tag, index: 2),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({required IconData icon, required int index}) {
-    return InkWell(
-      onTap: () => _onPageTapped(index),
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              icon,
-              color: _selectedIndex == index
-                  ? const Color(0xFF2E9A91)
-                  : Colors.grey[600],
-            ),
-          ],
         ),
       ),
     );
