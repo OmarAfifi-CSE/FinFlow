@@ -1,5 +1,6 @@
 import 'package:expense_manager/screens/tag_management_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -466,6 +467,8 @@ class _HomeScreenState extends State<HomeScreen>
     final bool isIncome = expense.amount > 0;
     final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
     final String amountPrefix = isIncome ? '+' : '-';
+    final String formattedDate = DateFormat.yMMMd().format(expense.date); // Produces: Jun 19, 2025
+
 
     return InkWell(
       onTap: () {
@@ -489,6 +492,7 @@ class _HomeScreenState extends State<HomeScreen>
             child: Icon(icon, color: theme.color),
           ),
           title: Text(categoryName),
+          subtitle: Text(formattedDate),
           trailing: Text(
             '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
             style: TextStyle(
