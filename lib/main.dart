@@ -44,12 +44,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
           ).copyWith(secondary: Colors.white),
         ),
-        // Use the flag to determine the initial route.
-        initialRoute: onboardingComplete ? '/home' : '/',
-        routes: {
-          '/': (context) => OnboardingScreen(),
-          '/home': (context) => HomeScreen(),
-        },
+        home: onboardingComplete ? const HomeScreen() : OnboardingScreen(),
       ),
     );
   }

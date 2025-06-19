@@ -47,7 +47,10 @@ class OnboardingScreen extends StatelessWidget {
                 // Save the flag
                 await prefs.setBool('onboarding_complete', true);
                 // Navigate to the home screen and remove the onboarding screen from the history
-                Navigator.of(context).pushReplacementNamed('/home');
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xff438883),
