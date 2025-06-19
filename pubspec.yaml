@@ -1,5 +1,5 @@
 name: expense_manager
-description: "A new Flutter project."
+description: "A personal finance companion built with Flutter to help you log expenses, categorize spending, and stay on budget."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -38,6 +38,7 @@ dependencies:
   provider: ^6.1.4
   collection: ^1.19.1
   shared_preferences: ^2.5.3
+  rename: ^3.1.0
 
 dev_dependencies:
   flutter_test:
