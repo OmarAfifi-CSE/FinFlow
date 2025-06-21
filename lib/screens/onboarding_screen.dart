@@ -1,6 +1,6 @@
-import 'package:expense_manager/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:expense_manager/screens/signin_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -49,7 +49,7 @@ class OnboardingScreen extends StatelessWidget {
                 // Navigate to the home screen and remove the onboarding screen from the history
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  MaterialPageRoute(builder: (context) => const SigninScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(

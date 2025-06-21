@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/expense_provider.dart';
-import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'package:expense_manager/screens/signin_screen.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized.
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
           ).copyWith(secondary: Colors.white),
         ),
-        home: onboardingComplete ? const HomeScreen() : OnboardingScreen(),
+        home: onboardingComplete ? const SigninScreen() : OnboardingScreen(),
       ),
     );
   }
