@@ -1,56 +1,33 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/expense.dart';
 import '../models/expense_category.dart';
 import '../models/tag.dart';
+import '../main.dart'; // To get the global 'supabase' client
+
+const uuid = Uuid();
 
 class ExpenseProvider with ChangeNotifier {
-  final SharedPreferences prefs;
+  // --- State Management ---
+  bool _isLoading = true;
+
+  bool get isLoading => _isLoading;
 
   // --- Data Lists ---
   List<Expense> _expenses = [];
   List<ExpenseCategory> _categories = [];
   List<Tag> _tags = [];
 
-  // --- Default Data (for first-time app run) ---
-  final List<ExpenseCategory> _defaultCategories = [
-    ExpenseCategory(id: '1', name: 'Food', isDefault: true),
-    ExpenseCategory(id: '2', name: 'Transport', isDefault: true),
-    ExpenseCategory(id: '3', name: 'Shopping', isDefault: true),
-    ExpenseCategory(id: '4', name: 'Groceries', isDefault: true),
-    ExpenseCategory(id: '5', name: 'Bills', isDefault: true),
-    ExpenseCategory(id: '6', name: 'Entertainment', isDefault: true),
-    ExpenseCategory(id: '7', name: 'Salary', isDefault: true),
-  ];
-
-  final List<Tag> _defaultTags = [
-    Tag(id: '1', name: 'Breakfast'),
-    Tag(id: '2', name: 'Lunch'),
-    Tag(id: '3', name: 'Dinner'),
-    Tag(id: '4', name: 'Treat'),
-    Tag(id: '5', name: 'Cafe'),
-    Tag(id: '6', name: 'Restaurant'),
-    Tag(id: '7', name: 'Train'),
-    Tag(id: '8', name: 'Vacation'),
-    Tag(id: '9', name: 'Birthday'),
-    Tag(id: '10', name: 'Diet'),
-    Tag(id: '11', name: 'MovieNight'),
-    Tag(id: '12', name: 'Tech'),
-    Tag(id: '13', name: 'CarStuff'),
-    Tag(id: '14', name: 'SelfCare'),
-    Tag(id: '15', name: 'Streaming'),
-    Tag(id: '16', name: 'Work'),
-  ];
-
-  // --- Getters ---
+  // --- Public Getters ---
   List<Expense> get expenses => _expenses;
 
   List<ExpenseCategory> get categories => _categories;
 
   List<Tag> get tags => _tags;
 
+  // --- Calculated Getters ---
   double get totalBalance =>
       _expenses.fold(0.0, (sum, item) => sum + item.amount);
 
@@ -62,128 +39,230 @@ class ExpenseProvider with ChangeNotifier {
       .where((e) => e.amount < 0)
       .fold(0.0, (sum, e) => sum + e.amount.abs());
 
-  // --- Constructor ---
-  ExpenseProvider(this.prefs) {
-    _loadDataFromStorage();
-  }
+  // --- Data Fetching from Supabase ---
+  Future<void> fetchInitialData() async {
+    _isLoading = true;
+    Future.delayed(Duration.zero, () => notifyListeners());
 
-  // --- Initialization Logic ---
-  void _loadDataFromStorage() {
-    // Load Expenses
-    final expensesData = prefs.getString('expenses_list');
-    if (expensesData != null) {
-      final List<dynamic> decoded = jsonDecode(expensesData);
-      _expenses = decoded.map((item) => Expense.fromJson(item)).toList();
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      final results = await Future.wait([
+        supabase.from('expenses').select().eq('user_id', userId),
+        supabase.from('categories').select().eq('user_id', userId),
+        supabase.from('tags').select().eq('user_id', userId),
+      ]);
+
+      _expenses = (results[0] as List)
+          .map((item) => Expense.fromJson(item))
+          .toList();
+      _categories = (results[1] as List)
+          .map((item) => ExpenseCategory.fromJson(item))
+          .toList();
+      _tags = (results[2] as List).map((item) => Tag.fromJson(item)).toList();
+
+      if (_categories.isEmpty) await _addDefaultCategories(userId);
+      if (_tags.isEmpty) await _addDefaultTags(userId);
+    } catch (e) {
+      debugPrint('Error fetching data: $e');
     }
 
-    // Load Categories (Defaults + User-Added)
-    _categories = List.from(_defaultCategories); // Start with defaults
-    final categoriesData = prefs.getString('user_categories');
-    if (categoriesData != null) {
-      final List<dynamic> decoded = jsonDecode(categoriesData);
-      _categories.addAll(decoded.map((item) => ExpenseCategory.fromJson(item)));
-    }
-
-    // Load Tags (Defaults + User-Added)
-    _tags = List.from(_defaultTags); // Start with defaults
-    final tagsData = prefs.getString('user_tags');
-    if (tagsData != null) {
-      final List<dynamic> decoded = jsonDecode(tagsData);
-      _tags.addAll(decoded.map((item) => Tag.fromJson(item)));
-    }
-
+    _isLoading = false;
     notifyListeners();
-  }
-
-  // --- Save Methods ---
-  Future<void> _saveExpenses() async {
-    await prefs.setString(
-      'expenses_list',
-      jsonEncode(_expenses.map((e) => e.toJson()).toList()),
-    );
-  }
-
-  Future<void> _saveCategories() async {
-    final userCategories = _categories
-        .where((cat) => cat.isDefault != true)
-        .toList();
-    await prefs.setString(
-      'user_categories',
-      jsonEncode(userCategories.map((c) => c.toJson()).toList()),
-    );
-  }
-
-  Future<void> _saveTags() async {
-    final defaultTagNames = _defaultTags.map((t) => t.name).toSet();
-    final userTags = _tags
-        .where((tag) => !defaultTagNames.contains(tag.name))
-        .toList();
-    await prefs.setString(
-      'user_tags',
-      jsonEncode(userTags.map((t) => t.toJson()).toList()),
-    );
   }
 
   // --- CRUD Operations ---
 
-  void addOrUpdateExpense(Expense expense) {
-    final index = _expenses.indexWhere((e) => e.id == expense.id);
+  Future<void> addOrUpdateExpense(Expense expense) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final expenseMap = expense.toJson();
+    expenseMap['user_id'] = user.id;
+
+    final savedData = await supabase
+        .from('expenses')
+        .upsert(expenseMap)
+        .select()
+        .single();
+    final savedExpense = Expense.fromJson(savedData);
+
+    final index = _expenses.indexWhere((e) => e.id == savedExpense.id);
     if (index != -1) {
-      _expenses[index] = expense;
+      _expenses[index] = savedExpense;
     } else {
-      _expenses.add(expense);
+      _expenses.insert(0, savedExpense);
     }
-    _saveExpenses();
     notifyListeners();
   }
 
-  void deleteExpense(String id) {
+  Future<void> deleteExpense(String id) async {
     _expenses.removeWhere((expense) => expense.id == id);
-    _saveExpenses();
     notifyListeners();
+
+    try {
+      await supabase.from('expenses').delete().eq('id', id);
+    } catch (e) {
+      debugPrint("Error deleting expense, re-fetching to sync state: $e");
+      await fetchInitialData();
+    }
   }
 
-  void addCategory(ExpenseCategory category) {
-    if (!_categories.any(
-      (cat) => cat.name.toLowerCase() == category.name.toLowerCase(),
+  Future<ExpenseCategory?> addCategory(
+    String name, {
+    bool isDefault = false,
+  }) async {
+    if (_categories.any(
+      (cat) => cat.name.toLowerCase() == name.toLowerCase(),
     )) {
-      _categories.add(category);
-      _saveCategories();
-      notifyListeners();
+      debugPrint('Category with this name already exists locally.');
+      return null;
     }
-  }
 
-  void deleteCategory(String id) {
-    final categoryToDelete = _categories.firstWhere(
-      (cat) => cat.id == id,
-      orElse: () => ExpenseCategory(id: '', name: ''),
+    final user = supabase.auth.currentUser;
+    if (user == null) return null;
+
+    final newCategory = ExpenseCategory(
+      id: uuid.v4(),
+      name: name,
+      isDefault: isDefault,
     );
-    if (categoryToDelete.isDefault == true)
-      return; // Prevent deleting default categories
 
-    _categories.removeWhere((category) => category.id == id);
-    _saveCategories();
-    notifyListeners();
-  }
+    final categoryMap = newCategory.toJson();
+    categoryMap['user_id'] = user.id;
 
-  void addTag(Tag tag) {
-    if (!_tags.any((t) => t.name.toLowerCase() == tag.name.toLowerCase())) {
-      _tags.add(tag);
-      _saveTags();
+    try {
+      final savedData = await supabase
+          .from('categories')
+          .insert(categoryMap)
+          .select()
+          .single();
+      final savedCategory = ExpenseCategory.fromJson(savedData);
+
+      _categories.add(savedCategory);
       notifyListeners();
+      return savedCategory;
+    } on PostgrestException catch (e) {
+      debugPrint("Error adding category: ${e.message}");
+      return null;
+    } catch (e) {
+      debugPrint("An unexpected error occurred: $e");
+      return null;
     }
   }
 
-  void deleteTag(String id) {
-    _tags.removeWhere((tag) => tag.id == id);
-    _saveTags();
+  Future<void> deleteCategory(String id) async {
+    _categories.removeWhere((category) => category.id == id);
     notifyListeners();
+    try {
+      await supabase.from('categories').delete().eq('id', id);
+    } catch (e) {
+      debugPrint("Error deleting category, re-fetching to sync state: $e");
+      await fetchInitialData();
+    }
   }
 
+  Future<Tag?> addTag(String name) async {
+    if (_tags.any((tag) => tag.name.toLowerCase() == name.toLowerCase())) {
+      debugPrint('Tag with this name already exists locally.');
+      return null;
+    }
+    final user = supabase.auth.currentUser;
+    if (user == null) return null;
+
+    final newTag = Tag(id: uuid.v4(), name: name);
+    final tagMap = newTag.toJson();
+    tagMap['user_id'] = user.id;
+
+    try {
+      final savedData = await supabase
+          .from('tags')
+          .insert(tagMap)
+          .select()
+          .single();
+      final savedTag = Tag.fromJson(savedData);
+
+      _tags.add(savedTag);
+      notifyListeners();
+      return savedTag;
+    } on PostgrestException catch (e) {
+      debugPrint("Error adding tag: ${e.message}");
+      return null;
+    } catch (e) {
+      debugPrint("An unexpected error occurred: $e");
+      return null;
+    }
+  }
+
+  Future<void> deleteTag(String id) async {
+    _tags.removeWhere((tag) => tag.id == id);
+    notifyListeners();
+    try {
+      await supabase.from('tags').delete().eq('id', id);
+    } catch (e) {
+      debugPrint("Error deleting tag, re-fetching to sync state: $e");
+      await fetchInitialData();
+    }
+  }
+
+  // --- Helper and Default Data functions ---
   ExpenseCategory getCategoryForId(String categoryId) {
     return categories.firstWhere(
       (cat) => cat.id == categoryId,
-      orElse: () => ExpenseCategory(id: 'unknown', name: 'Unknown'),
+      orElse: () =>
+          ExpenseCategory(id: 'unknown', name: 'Unknown', isDefault: false),
     );
+  }
+
+  Future<void> _addDefaultCategories(String userId) async {
+    final List<Map<String, dynamic>> defaultCategories = [
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Food', 'is_default': true},
+      {
+        'id': uuid.v4(),
+        'user_id': userId,
+        'name': 'Transport',
+        'is_default': true,
+      },
+      {
+        'id': uuid.v4(),
+        'user_id': userId,
+        'name': 'Shopping',
+        'is_default': true,
+      },
+      {
+        'id': uuid.v4(),
+        'user_id': userId,
+        'name': 'Groceries',
+        'is_default': true,
+      },
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Bills', 'is_default': true},
+      {
+        'id': uuid.v4(),
+        'user_id': userId,
+        'name': 'Entertainment',
+        'is_default': true,
+      },
+      {
+        'id': uuid.v4(),
+        'user_id': userId,
+        'name': 'Salary',
+        'is_default': true,
+      },
+    ];
+    await supabase.from('categories').insert(defaultCategories);
+    await fetchInitialData();
+  }
+
+  Future<void> _addDefaultTags(String userId) async {
+    final List<Map<String, dynamic>> defaultTags = [
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Breakfast'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Lunch'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Dinner'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Vacation'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Work'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Tech'},
+    ];
+    await supabase.from('tags').insert(defaultTags);
+    await fetchInitialData();
   }
 }

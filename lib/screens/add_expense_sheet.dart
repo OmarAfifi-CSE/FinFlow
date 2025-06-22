@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
+
 import '../models/expense.dart';
+import '../models/expense_category.dart';
+import '../models/tag.dart';
 import '../providers/expense_provider.dart';
-import '../widgets/add_category_dialog.dart';
-import '../widgets/add_tag_dialog.dart';
 import '../utils/app_constants.dart';
+
+const uuid = Uuid();
 
 class AddExpenseSheet extends StatefulWidget {
   final Expense? expense;
@@ -22,9 +26,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
   late TextEditingController _noteController;
   String? _selectedCategoryId;
   String? _selectedTagId;
-  DateTime _selectedDate = DateTime.now();
-  bool _isExpense = true;
+  late DateTime _selectedDate;
+  late bool _isExpense;
   String? _errorMessage;
+
+  bool _isSaving = false;
 
   late TabController _toggleTabController;
 
@@ -33,9 +39,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     super.initState();
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
-    if (widget.expense != null) {
-      _isExpense = widget.expense!.amount < 0;
-    }
+    _isExpense = widget.expense?.amount == null || widget.expense!.amount < 0;
 
     _toggleTabController = TabController(
       initialIndex: _isExpense ? 0 : 1,
@@ -44,36 +48,27 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     );
 
     _toggleTabController.addListener(() {
-      if (_toggleTabController.index == 0 && !_isExpense) {
+      if (_toggleTabController.indexIsChanging) {
         setState(() {
-          _isExpense = true;
-        });
-      } else if (_toggleTabController.index == 1 && _isExpense) {
-        setState(() {
-          _isExpense = false;
+          _isExpense = _toggleTabController.index == 0;
         });
       }
     });
 
     if (widget.expense != null) {
       _amountController = TextEditingController(
-        text: widget.expense!.amount.abs().toString(),
+        text: widget.expense!.amount.abs().toStringAsFixed(2),
       );
-      _noteController = TextEditingController(text: widget.expense?.note ?? '');
-      _selectedDate = widget.expense?.date ?? DateTime.now();
+      _noteController = TextEditingController(text: widget.expense!.note);
+      _selectedDate = widget.expense!.date;
 
-      final savedCategoryId = widget.expense?.categoryId;
-      if (provider.categories.any((cat) => cat.id == savedCategoryId)) {
-        _selectedCategoryId = savedCategoryId;
-      } else {
-        _selectedCategoryId = null;
+      if (provider.categories.any(
+        (cat) => cat.id == widget.expense!.categoryId,
+      )) {
+        _selectedCategoryId = widget.expense!.categoryId;
       }
-
-      final savedTagId = widget.expense?.tag;
-      if (provider.tags.any((tag) => tag.id == savedTagId)) {
-        _selectedTagId = savedTagId;
-      } else {
-        _selectedTagId = null;
+      if (provider.tags.any((tag) => tag.id == widget.expense!.tag)) {
+        _selectedTagId = widget.expense!.tag;
       }
     } else {
       _amountController = TextEditingController();
@@ -88,6 +83,93 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     _noteController.dispose();
     _toggleTabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveTransaction() async {
+    setState(() {
+      _errorMessage = null;
+    });
+
+    final amountText = _amountController.text.trim();
+    if (amountText.isEmpty || _selectedCategoryId == null) {
+      setState(() {
+        _errorMessage = 'Amount and Category are required!';
+      });
+      return;
+    }
+    final double amount = double.tryParse(amountText) ?? 0.0;
+    if (amount <= 0) {
+      setState(() {
+        _errorMessage = 'Please enter an amount greater than zero.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final double finalAmount = _isExpense ? -amount : amount;
+      final expense = Expense(
+        id: widget.expense?.id ?? uuid.v4(),
+        amount: finalAmount,
+        categoryId: _selectedCategoryId!,
+        note: _noteController.text,
+        date: _selectedDate,
+        tag: _selectedTagId,
+      );
+
+      await Provider.of<ExpenseProvider>(
+        context,
+        listen: false,
+      ).addOrUpdateExpense(expense);
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error saving transaction: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteTransaction() async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Are you sure?'),
+        content: const Text('This transaction will be permanently deleted.'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          TextButton(
+            child: Text('Delete', style: TextStyle(color: Colors.red[700])),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && widget.expense != null) {
+      await Provider.of<ExpenseProvider>(
+        context,
+        listen: false,
+      ).deleteExpense(widget.expense!.id);
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    }
   }
 
   @override
@@ -137,9 +219,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
             ),
             buildDateField(context, _selectedDate),
             const SizedBox(height: 8),
-            buildCategoryDropdown(context.watch<ExpenseProvider>()),
+            buildCategoryDropdown(context),
             const SizedBox(height: 16),
-            buildTagDropdown(context.watch<ExpenseProvider>()),
+            buildTagDropdown(context),
             const SizedBox(height: 16),
             if (_errorMessage != null)
               Padding(
@@ -153,43 +235,51 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                   textAlign: TextAlign.center,
                 ),
               ),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E9A91),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _saveTransaction,
-                    child: const Text(
-                      'Save Transaction',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+            if (_isSaving)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
                 ),
-                if (widget.expense != null) ...[
-                  const SizedBox(width: 16),
-                  IconButton(
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.red[50],
-                      foregroundColor: Colors.red[700],
-                      padding: const EdgeInsets.all(12),
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E9A91),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _saveTransaction,
+                      child: const Text(
+                        'Save Transaction',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    onPressed: _deleteTransaction,
-                    icon: const Icon(Icons.delete_forever),
-                    tooltip: 'Delete Transaction',
                   ),
+                  if (widget.expense != null) ...[
+                    const SizedBox(width: 16),
+                    IconButton(
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red[50],
+                        foregroundColor: Colors.red[700],
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      onPressed: _deleteTransaction,
+                      icon: const Icon(Icons.delete_forever),
+                      tooltip: 'Delete Transaction',
+                    ),
+                  ],
                 ],
-              ],
-            ),
+              ),
           ],
         ),
       ),
@@ -200,7 +290,6 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     final Color indicatorColor = _isExpense
         ? Colors.red[400]!
         : Colors.green[400]!;
-
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -223,7 +312,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         splashFactory: NoSplash.splashFactory,
-        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        overlayColor: MaterialStateProperty.all(Colors.transparent),
         labelColor: Colors.white,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelColor: Colors.black54,
@@ -233,72 +322,6 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
         ],
       ),
     );
-  }
-
-  void _saveTransaction() {
-    setState(() {
-      _errorMessage = null;
-    });
-    final amountText = _amountController.text.trim();
-    if (amountText.isEmpty || _selectedCategoryId == null) {
-      setState(() {
-        _errorMessage = 'Amount and Category are required!';
-      });
-      return;
-    }
-    final double amount = double.tryParse(amountText) ?? 0.0;
-    if (amount <= 0) {
-      setState(() {
-        _errorMessage = 'Please enter an amount greater than zero.';
-      });
-      return;
-    }
-    final double finalAmount = _isExpense ? -amount : amount;
-    final expense = Expense(
-      id: widget.expense?.id ?? DateTime.now().toString(),
-      amount: finalAmount,
-      categoryId: _selectedCategoryId!,
-      note: _noteController.text,
-      date: _selectedDate,
-      tag: _selectedTagId ?? '',
-    );
-    Provider.of<ExpenseProvider>(
-      context,
-      listen: false,
-    ).addOrUpdateExpense(expense);
-    Navigator.pop(context);
-  }
-
-  // --- FIX: Added method to handle transaction deletion ---
-  void _deleteTransaction() async {
-    final bool? shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Are you sure?'),
-        content: const Text('This transaction will be permanently deleted.'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: Text('Delete', style: TextStyle(color: Colors.red[700])),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
-        ],
-      ),
-    );
-
-    // Check if the user confirmed the deletion.
-    if (shouldDelete == true) {
-      // Use the provider to delete the expense.
-      Provider.of<ExpenseProvider>(
-        context,
-        listen: false,
-      ).deleteExpense(widget.expense!.id);
-      // Pop the bottom sheet to go back to the home screen.
-      Navigator.pop(context);
-    }
   }
 
   Widget buildTextField(
@@ -347,83 +370,179 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     );
   }
 
-  Widget buildCategoryDropdown(ExpenseProvider provider) {
-    return DropdownButtonFormField<String>(
-      value: _selectedCategoryId,
-      onChanged: (newValue) {
-        if (newValue == 'New') {
-          showDialog(
-            context: context,
-            builder: (context) => AddCategoryDialog(
-              onAdd: (newCategory) {
-                provider.addCategory(newCategory);
-                setState(() => _selectedCategoryId = newCategory.id);
-              },
-            ),
-          );
-        } else {
-          setState(() => _selectedCategoryId = newValue);
-        }
-      },
-      items:
-          provider.categories.map<DropdownMenuItem<String>>((category) {
-            return DropdownMenuItem<String>(
-              value: category.id,
-              child: Text(category.name),
-            );
-          }).toList()..add(
-            const DropdownMenuItem(
-              value: "New",
-              child: Text(
-                "＋ Add New Category",
-                style: TextStyle(color: Color(0xFF2E9A91)),
+  void _showAddNewDialog({
+    required BuildContext context,
+    required String title,
+    required String hint,
+    required Future<void> Function(String) onAdd,
+  }) {
+    final TextEditingController controller = TextEditingController();
+    String? dialogErrorMessage;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(hintText: hint),
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
+                  ),
+                  if (dialogErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: Text(
+                        dialogErrorMessage!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ),
-          ),
-      decoration: InputDecoration(
-        labelText: 'Category',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+                TextButton(
+                  child: const Text('Add'),
+                  onPressed: () async {
+                    final name = toTitleCase(controller.text.trim());
+                    if (name.isNotEmpty) {
+                      await onAdd(name);
+                    } else {
+                      setDialogState(() {
+                        dialogErrorMessage = 'Name cannot be empty.';
+                      });
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget buildTagDropdown(ExpenseProvider provider) {
-    return DropdownButtonFormField<String>(
-      value: _selectedTagId,
-      onChanged: (newValue) {
-        if (newValue == 'New') {
-          showDialog(
-            context: context,
-            builder: (context) => AddTagDialog(
-              onAdd: (newTag) {
-                provider.addTag(newTag);
-                setState(() => _selectedTagId = newTag.id);
-              },
-            ),
-          );
-        } else {
-          setState(() => _selectedTagId = newValue);
-        }
-      },
-      items:
-          provider.tags.map<DropdownMenuItem<String>>((tag) {
-            return DropdownMenuItem<String>(
-              value: tag.id,
-              child: Text(tag.name),
-            );
-          }).toList()..add(
-            const DropdownMenuItem(
-              value: "New",
-              child: Text(
-                "＋ Add New Tag",
-                style: TextStyle(color: Color(0xFF2E9A91)),
+  Widget buildCategoryDropdown(BuildContext context) {
+    final provider = Provider.of<ExpenseProvider>(context, listen: false);
+    return Consumer<ExpenseProvider>(
+      builder: (context, consumerProvider, child) {
+        return DropdownButtonFormField<String>(
+          value: _selectedCategoryId,
+          onChanged: (newValue) {
+            if (newValue == 'New') {
+              _showAddNewDialog(
+                context: context,
+                title: 'Add New Category',
+                hint: "e.g., 'Health'",
+                onAdd: (name) async {
+                  final newCategory = await provider.addCategory(name);
+                  if (mounted && newCategory != null) {
+                    Navigator.pop(context); // Close dialog on success
+                    setState(() => _selectedCategoryId = newCategory.id);
+                  } else if (mounted) {
+                    // This will be handled by the dialog's state, but as a fallback:
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Category already exists or failed to add.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+              );
+            } else {
+              setState(() => _selectedCategoryId = newValue);
+            }
+          },
+          items:
+              consumerProvider.categories.map<DropdownMenuItem<String>>((
+                category,
+              ) {
+                return DropdownMenuItem<String>(
+                  value: category.id,
+                  child: Text(category.name),
+                );
+              }).toList()..add(
+                const DropdownMenuItem(
+                  value: "New",
+                  child: Text(
+                    "＋ Add New Category",
+                    style: TextStyle(color: Color(0xFF2E9A91)),
+                  ),
+                ),
               ),
-            ),
+          decoration: InputDecoration(
+            labelText: 'Category',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
-      decoration: InputDecoration(
-        labelText: 'Tag (Optional)',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+        );
+      },
+    );
+  }
+
+  Widget buildTagDropdown(BuildContext context) {
+    final provider = Provider.of<ExpenseProvider>(context, listen: false);
+    return Consumer<ExpenseProvider>(
+      builder: (context, consumerProvider, child) {
+        return DropdownButtonFormField<String?>(
+          value: _selectedTagId,
+          onChanged: (newValue) {
+            if (newValue == 'New') {
+              _showAddNewDialog(
+                context: context,
+                title: 'Add New Tag',
+                hint: "e.g., 'Work'",
+                onAdd: (name) async {
+                  final newTag = await provider.addTag(name);
+                  if (mounted && newTag != null) {
+                    Navigator.pop(context); // Close dialog on success
+                    setState(() => _selectedTagId = newTag.id);
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tag already exists or failed to add.'),
+                      ),
+                    );
+                  }
+                },
+              );
+            } else {
+              setState(() => _selectedTagId = newValue);
+            }
+          },
+          items:
+              consumerProvider.tags.map<DropdownMenuItem<String?>>((tag) {
+                return DropdownMenuItem<String?>(
+                  value: tag.id,
+                  child: Text(tag.name),
+                );
+              }).toList()..add(
+                const DropdownMenuItem(
+                  value: "New",
+                  child: Text(
+                    "＋ Add New Tag",
+                    style: TextStyle(color: Color(0xFF2E9A91)),
+                  ),
+                ),
+              ),
+          decoration: InputDecoration(
+            labelText: 'Tag (Optional)',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      },
     );
   }
 }

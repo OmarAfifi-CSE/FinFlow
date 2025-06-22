@@ -1,8 +1,12 @@
-import 'package:expense_manager/screens/home_screen.dart';
-import 'package:expense_manager/screens/signin_screen.dart';
+// lib/screens/signup_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../componants/my_button.dart';
 import '../componants/my_textfield.dart';
+import 'signin_screen.dart';
+import '../main.dart'; // Import to use the global 'supabase' client
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -12,7 +16,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  // Declare TextEditingControllers for email and password fields
+  // Your existing controllers and keys are perfect.
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -20,13 +24,85 @@ class _SignupScreenState extends State<SignupScreen> {
   final GlobalKey<FormState> emailState = GlobalKey();
   final GlobalKey<FormState> passwordState = GlobalKey();
 
+  // --- NEW --- We add a loading state variable.
+  bool _isLoading = false;
+
   @override
   void dispose() {
-    // Dispose the controllers when the widget is disposed
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  /// --- NEW --- This is the new sign-up logic.
+  Future<void> _signUp() async {
+    // 1. Validate all form fields using your existing keys.
+    final isUsernameValid = usernameState.currentState!.validate();
+    final isEmailValid = emailState.currentState!.validate();
+    final isPasswordValid = passwordState.currentState!.validate();
+
+    // If any field is invalid, stop here.
+    if (!isUsernameValid || !isEmailValid || !isPasswordValid) {
+      return;
+    }
+
+    // 2. Set the loading state to show a progress indicator.
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 3. Attempt to sign up with Supabase Auth.
+      await supabase.auth.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        // We can pass extra non-sensitive data like the username.
+        data: {'username': _usernameController.text.trim()},
+        // This is our deep link for the email confirmation.
+        emailRedirectTo: 'io.supabase.finflow://login-callback/',
+      );
+
+      // 4. On success, show a confirmation message and navigate back.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Success! Please check your email to confirm your account.',
+            ),
+          ),
+        );
+        // Go back to the sign-in screen so they can log in after confirming.
+        Navigator.of(context).pop();
+      }
+    } on AuthException catch (e) {
+      // 5. If Supabase returns an error, show it in a snackbar.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      // 6. Handle any other unexpected errors.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('An unexpected error occurred.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+
+    // 7. After the attempt, hide the loading indicator.
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -43,6 +119,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // --- ALL YOUR UI CODE IS UNCHANGED ---
                     const Text(
                       textAlign: TextAlign.center,
                       "Create Account",
@@ -52,9 +129,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(
-                      height: 55,
-                    ),
+                    const SizedBox(height: 55),
                     const Text(
                       textAlign: TextAlign.start,
                       "Sign Up",
@@ -64,18 +139,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(
-                      height: 25,
-                    ),
+                    const SizedBox(height: 25),
                     const Row(
                       children: [
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Icon(
-                          Icons.person_outline_outlined,
-                          size: 12,
-                        ),
+                        SizedBox(width: 5),
+                        Icon(Icons.person_outline_outlined, size: 12),
                         Text(
                           textAlign: TextAlign.start,
                           " Your username",
@@ -87,10 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // Email TextField
+                    const SizedBox(height: 10),
                     MyTextfield(
                       controller: _usernameController,
                       hintText: 'Username',
@@ -98,18 +163,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       valMessage: 'Enter username',
                       obscureText: false,
                     ),
-                    const SizedBox(
-                      height: 30,
-                    ),
+                    const SizedBox(height: 30),
                     const Row(
                       children: [
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Icon(
-                          Icons.email_outlined,
-                          size: 12,
-                        ),
+                        SizedBox(width: 5),
+                        Icon(Icons.email_outlined, size: 12),
                         Text(
                           textAlign: TextAlign.start,
                           " Your email",
@@ -121,10 +179,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // Email TextField
+                    const SizedBox(height: 10),
                     MyTextfield(
                       controller: _emailController,
                       hintText: 'Email',
@@ -132,19 +187,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       valMessage: 'Enter email',
                       obscureText: false,
                     ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-
+                    const SizedBox(height: 30),
                     const Row(
                       children: [
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Icon(
-                          Icons.lock_outline,
-                          size: 12,
-                        ),
+                        SizedBox(width: 5),
+                        Icon(Icons.lock_outline, size: 12),
                         Text(
                           textAlign: TextAlign.start,
                           " Password",
@@ -156,10 +203,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // Password TextField
+                    const SizedBox(height: 10),
                     MyTextfield(
                       controller: _passwordController,
                       hintText: 'Password',
@@ -167,80 +211,32 @@ class _SignupScreenState extends State<SignupScreen> {
                       formKey: passwordState,
                       valMessage: 'Enter password',
                     ),
-                    const SizedBox(
-                      height: 100,
-                    ),
+                    const SizedBox(height: 100),
 
-                    // Sign up button
-
-                    MyButton(
-                      button_msg: 'Sign Up',
-                      bgColor: Colors.teal,
-                      fgColor: Colors.white,
-                      onPressed: () {
-                        // Validate all fields
-                        bool isUsernameValid =
-                        usernameState.currentState!.validate();
-                        bool isEmailValid = emailState.currentState!.validate();
-                        bool isPasswordValid =
-                        passwordState.currentState!.validate();
-
-                        // Check if all validations passed
-                        if (isUsernameValid &&
-                            isEmailValid &&
-                            isPasswordValid) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomeScreen(),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Please fill out all fields correctly!',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: Colors.red,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              margin: const EdgeInsets.all(20),
-                              elevation: 10,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      },
-                      padding: 15,
-                      borderRadius: 50,
-                    ),
-
-                    const SizedBox(
-                      height: 15,
-                    ),
+                    // --- THIS IS THE ONLY UI CHANGE ---
+                    // If loading, show a progress indicator. Otherwise, show the button.
+                    if (_isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else
+                      MyButton(
+                        button_msg: 'Sign Up',
+                        bgColor: Colors.teal,
+                        fgColor: Colors.white,
+                        // The button now calls our new _signUp function.
+                        onPressed: _signUp,
+                        padding: 15,
+                        borderRadius: 50,
+                      ),
+                    const SizedBox(height: 15),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "Already a user?",
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                        ),
+                        const Text("Already a user?"),
                         const SizedBox(width: 4),
                         InkWell(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const SigninScreen()),
-                            );
+                            // Go back to the sign-in screen.
+                            Navigator.pop(context);
                           },
                           child: const Text(
                             'Sign In',

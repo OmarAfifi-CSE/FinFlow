@@ -1,13 +1,14 @@
-import 'package:expense_manager/screens/tag_management_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
+import '../main.dart'; // Import to use the global 'supabase' client
 import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 import 'add_expense_sheet.dart';
 import 'category_management_screen.dart';
+import 'tag_management_screen.dart';
 import '../utils/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,13 +18,12 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-// Helper class for the sticky header.
+// Your helper class for the sticky header remains unchanged.
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
 
   final Widget _tabBar;
 
-  // The height of the tab bar section
   @override
   double get minExtent => 140;
 
@@ -36,10 +36,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
-      color: Colors.grey[100], // Match the Scaffold's background color
-      child: _tabBar,
-    );
+    return Container(color: Colors.grey[100], child: _tabBar);
   }
 
   @override
@@ -54,17 +51,14 @@ class _HomeScreenState extends State<HomeScreen>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
-  void _onPageTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ExpenseProvider>(context, listen: false).fetchInitialData();
+    });
   }
 
   @override
@@ -73,14 +67,21 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  void _onPageTapped(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   Widget _buildCurrentPage() {
     switch (_selectedIndex) {
       case 0:
         return _buildHomePageContent();
       case 1:
-        return CategoryManagementScreen();
+        return const CategoryManagementScreen();
       case 2:
-        return TagManagementScreen();
+        return const TagManagementScreen();
       default:
         return _buildHomePageContent();
     }
@@ -93,7 +94,6 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
-      // FIX: Reverted to the original, simple AppBar
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
@@ -109,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen>
           tooltip: 'Open menu',
         ),
       ),
-      // FIX: Reverted to the original, non-conditional Drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -145,10 +144,26 @@ class _HomeScreenState extends State<HomeScreen>
                 _onPageTapped(2);
               },
             ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout'),
+              onTap: () async {
+                Navigator.pop(context);
+                await supabase.auth.signOut();
+              },
+            ),
           ],
         ),
       ),
-      body: _buildCurrentPage(),
+      body: Consumer<ExpenseProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return _buildCurrentPage();
+        },
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -156,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen>
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (context) => AddExpenseSheet(),
+            builder: (context) => const AddExpenseSheet(),
           );
         },
         tooltip: 'Add Transaction',
@@ -168,22 +183,18 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // --- This is the key fix for scrolling ---
   Widget _buildHomePageContent() {
     final provider = Provider.of<ExpenseProvider>(context);
     return NestedScrollView(
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        // These are the slivers that will scroll away.
         return <Widget>[
           SliverToBoxAdapter(child: _buildBalanceCard(provider)),
-          // This makes the TabBar header stick to the top.
           SliverPersistentHeader(
             delegate: _SliverAppBarDelegate(_buildTabBar()),
             pinned: true,
           ),
         ];
       },
-      // The body is the content of the tabs, which can now scroll freely.
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -266,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen>
             Text(
               'Total Balance',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 fontSize: 16,
               ),
             ),
@@ -312,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen>
             Text(
               title,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 fontSize: 14,
               ),
             ),
@@ -361,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen>
                 color: primaryColor,
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.3),
+                    color: primaryColor.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -369,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               splashFactory: NoSplash.splashFactory,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              overlayColor: MaterialStateProperty.all(Colors.transparent),
               labelColor: Colors.white,
               labelStyle: const TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelColor: Colors.black54,
@@ -425,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen>
             String categoryName = provider.getCategoryForId(entry.key).name;
             double total = entry.value.fold(
               0.0,
-              (double prev, Expense element) => prev + element.amount,
+              (prev, Expense element) => prev + element.amount,
             );
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,8 +478,7 @@ class _HomeScreenState extends State<HomeScreen>
     final bool isIncome = expense.amount > 0;
     final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
     final String amountPrefix = isIncome ? '+' : '-';
-    final String formattedDate = DateFormat.yMMMd().format(expense.date); // Produces: Jun 19, 2025
-
+    final String formattedDate = DateFormat.yMMMd().format(expense.date);
 
     return InkWell(
       onTap: () {

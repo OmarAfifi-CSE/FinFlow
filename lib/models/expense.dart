@@ -1,10 +1,10 @@
 class Expense {
   final String id;
   final double amount;
-  final String categoryId; // This will link to ExpenseCategory
+  final String categoryId;
   final String note;
   final DateTime date;
-  final String tag; // This assumes you have a tagging system. Adjust if needed.
+  final String? tag;
 
   Expense({
     required this.id,
@@ -12,7 +12,7 @@ class Expense {
     required this.categoryId,
     required this.note,
     required this.date,
-    required this.tag,
+    this.tag,
   });
 
   // Convert a JSON object to an Expense instance
@@ -20,10 +20,10 @@ class Expense {
     return Expense(
       id: json['id'],
       amount: json['amount'],
-      categoryId: json['categoryId'],
-      note: json['note'],
+      categoryId: json['category_id'],
+      note: json['description'],
       date: DateTime.parse(json['date']),
-      tag: json['tag'],
+      tag: json['tag_id'],
     );
   }
 
@@ -32,10 +32,10 @@ class Expense {
     return {
       'id': id,
       'amount': amount,
-      'categoryId': categoryId,
-      'note': note,
+      'category_id': categoryId,
+      'description': note,
       'date': date.toIso8601String(),
-      'tag': tag,
+      'tag_id': tag,
     };
   }
 }

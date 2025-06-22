@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'auth/auth_gate.dart';
 import 'providers/expense_provider.dart';
 import 'screens/onboarding_screen.dart';
-import 'package:expense_manager/screens/signin_screen.dart';
+
+// A global variable to easily access the Supabase client from anywhere in the app
+final supabase = Supabase.instance.client;
 
 Future<void> main() async {
-  // Ensure Flutter is initialized.
+  // Ensure Flutter is initialized before running async code.
   WidgetsFlutterBinding.ensureInitialized();
-  // Get instance of SharedPreferences.
+  // --- Supabase Initialization ---
+  await Supabase.initialize(
+    url: 'https://fpeynvsshkecovrkuwfx.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwZXludnNzaGtlY292cmt1d2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1MjI5OTMsImV4cCI6MjA2NjA5ODk5M30.KJyjKGowSSxGDadzzFjefbGUlayd3L9ndpTmconoe3M',
+  );
+
+  // Get instance of SharedPreferences for the onboarding check.
   final prefs = await SharedPreferences.getInstance();
   // Check if onboarding has been completed. Default to false if not found.
   final bool onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-
   runApp(MyApp(prefs: prefs, onboardingComplete: onboardingComplete));
 }
 
@@ -29,11 +39,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Pass the SharedPreferences instance to your provider.
-        ChangeNotifierProvider(create: (_) => ExpenseProvider(prefs)),
-      ],
+    return ChangeNotifierProvider(
+      create: (_) => ExpenseProvider(),
       child: MaterialApp(
         title: 'FinFlow',
         debugShowCheckedModeBanner: false,
@@ -44,7 +51,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
           ).copyWith(secondary: Colors.white),
         ),
-        home: onboardingComplete ? const SigninScreen() : OnboardingScreen(),
+        home: onboardingComplete ? const AuthGate() : OnboardingScreen(),
       ),
     );
   }

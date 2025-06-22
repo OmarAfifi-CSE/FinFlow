@@ -12,8 +12,6 @@ class TagManagementScreen extends StatelessWidget {
     const primaryColor = Color(0xFF2E9A91);
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
-    // FIX: Removed the Scaffold and AppBar. This widget now only returns
-    // the content to be displayed.
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Consumer<ExpenseProvider>(
@@ -41,9 +39,9 @@ class TagManagementScreen extends StatelessWidget {
                 direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red[700],
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   alignment: Alignment.centerRight,
-                  child: Icon(Icons.delete_forever, color: Colors.white),
+                  child: const Icon(Icons.delete_forever, color: Colors.white),
                 ),
                 confirmDismiss: (direction) async {
                   return await _showDeleteConfirmationDialog(context, tag);
@@ -53,18 +51,25 @@ class TagManagementScreen extends StatelessWidget {
                 },
                 child: Card(
                   elevation: 1,
-                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: primaryColor.withValues(alpha: 0.15),
-                      child: Icon(Icons.tag, size: 20, color: primaryColor),
+                      backgroundColor: primaryColor.withAlpha(30),
+                      child: const Icon(
+                        Icons.tag,
+                        size: 20,
+                        color: primaryColor,
+                      ),
                     ),
                     title: Text(
                       tag.name,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete_outline, color: Colors.red[700]),
@@ -88,7 +93,7 @@ class TagManagementScreen extends StatelessWidget {
         onPressed: () => _showAddTagDialog(context, provider),
         tooltip: 'Add New Tag',
         backgroundColor: primaryColor,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -97,17 +102,17 @@ class TagManagementScreen extends StatelessWidget {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Are you sure?'),
+        title: const Text('Are you sure?'),
         content: Text(
           'Do you want to delete the tag "${tag.name}"? This action cannot be undone.',
         ),
         actions: <Widget>[
           TextButton(
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: Colors.red[700])),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
@@ -115,54 +120,81 @@ class TagManagementScreen extends StatelessWidget {
     );
   }
 
-  void _deleteTagAndShowSnackBar(
+  Future<void> _deleteTagAndShowSnackBar(
     BuildContext context,
     ExpenseProvider provider,
     Tag tag,
-  ) {
-    provider.deleteTag(tag.id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: Duration(seconds: 2),
-        content: Text('"${tag.name}" deleted.'),
-        backgroundColor: Colors.black87,
-      ),
-    );
+  ) async {
+    await provider.deleteTag(tag.id);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text('"${tag.name}" deleted.'),
+          backgroundColor: Colors.black87,
+        ),
+      );
+    }
   }
 
   void _showAddTagDialog(BuildContext context, ExpenseProvider provider) {
     final TextEditingController tagNameController = TextEditingController();
+    String? dialogErrorMessage;
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text('Add New Tag'),
-          content: TextField(
-            controller: tagNameController,
-            decoration: InputDecoration(hintText: "e.g., 'Work' or 'Personal'"),
-            autofocus: true,
-            textCapitalization: TextCapitalization.words,
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-            TextButton(
-              child: Text('Add'),
-              onPressed: () {
-                final name = toTitleCase(tagNameController.text.trim());
-                if (name.isNotEmpty) {
-                  final newTag = Tag(
-                    id: DateTime.now().toIso8601String(),
-                    name: name,
-                  );
-                  provider.addTag(newTag);
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Add New Tag'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: tagNameController,
+                    decoration: const InputDecoration(
+                      hintText: "e.g., 'Work' or 'Personal'",
+                    ),
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
+                  ),
+                  if (dialogErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: Text(
+                        dialogErrorMessage!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+                TextButton(
+                  child: const Text('Add'),
+                  onPressed: () async {
+                    final name = toTitleCase(tagNameController.text.trim());
+                    if (name.isNotEmpty) {
+                      final newTag = await provider.addTag(name);
+                      if (newTag != null) {
+                        if (context.mounted) Navigator.of(dialogContext).pop();
+                      } else {
+                        setDialogState(() {
+                          dialogErrorMessage = 'This tag already exists.';
+                        });
+                      }
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
