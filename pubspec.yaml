@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.5.3
   supabase_flutter: ^2.9.1
   uuid: ^4.5.1
+  flutter_dotenv: ^5.2.1
   rename: ^3.1.0
 
 dev_dependencies:
@@ -66,6 +67,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - .env
     - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
