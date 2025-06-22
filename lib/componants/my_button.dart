@@ -9,15 +9,16 @@ class MyButton extends StatelessWidget {
   final double padding;
   final double borderRadius;
 
-  const MyButton(
-      {super.key,
-        required this.button_msg,
-        this.button_icon,
-        required this.bgColor,
-        required this.fgColor,
-        this.onPressed,
-        required this.padding,
-        required this.borderRadius});
+  const MyButton({
+    super.key,
+    required this.button_msg,
+    this.button_icon,
+    required this.bgColor,
+    required this.fgColor,
+    this.onPressed,
+    required this.padding,
+    required this.borderRadius,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +28,7 @@ class MyButton extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: onPressed,
-          label: Text(
-            button_msg,
-            style: const TextStyle(fontSize: 20),
-          ),
+          label: Text(button_msg, style: const TextStyle(fontSize: 20)),
           icon: button_icon,
           style: ElevatedButton.styleFrom(
             backgroundColor: bgColor,

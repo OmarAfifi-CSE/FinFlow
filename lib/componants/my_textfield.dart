@@ -57,7 +57,9 @@ class _MyTextfieldState extends State<MyTextfield> {
             contentPadding: const EdgeInsets.all(13),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: widget.borderSideColor ?? Color(0xFF828282)),
+              borderSide: BorderSide(
+                color: widget.borderSideColor ?? Color(0xFF828282),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -69,18 +71,18 @@ class _MyTextfieldState extends State<MyTextfield> {
             hintStyle: const TextStyle(color: Color(0xFF828282)),
             suffixIcon: widget.obscureText
                 ? IconButton(
-              icon: Icon(
-                _obscureText
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: const Color(0xFF828282),
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureText = !_obscureText;
-                });
-              },
-            )
+                    icon: Icon(
+                      _obscureText
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: const Color(0xFF828282),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  )
                 : null,
           ),
           onChanged: widget.onChanged,
@@ -89,4 +91,3 @@ class _MyTextfieldState extends State<MyTextfield> {
     );
   }
 }
-
