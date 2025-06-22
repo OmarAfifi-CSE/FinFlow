@@ -1,3 +1,4 @@
+import 'package:expense_manager/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -82,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen>
         return const CategoryManagementScreen();
       case 2:
         return const TagManagementScreen();
+      case 3:
+        return const ProfileScreen();
       default:
         return _buildHomePageContent();
     }
@@ -142,6 +145,14 @@ class _HomeScreenState extends State<HomeScreen>
               onTap: () {
                 Navigator.pop(context);
                 _onPageTapped(2);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: primaryColor),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                _onPageTapped(3);
               },
             ),
             const Divider(),
@@ -216,16 +227,12 @@ class _HomeScreenState extends State<HomeScreen>
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [_buildNavItem(icon: Icons.home, index: 0)],
-            ),
-          ),
-          const SizedBox(width: 60),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                _buildNavItem(icon: Icons.home, index: 0),
                 _buildNavItem(icon: Icons.category, index: 1),
+                const SizedBox(width: 40),
                 _buildNavItem(icon: Icons.tag, index: 2),
+                _buildNavItem(icon: Icons.person, index: 3),
               ],
             ),
           ),
