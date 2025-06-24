@@ -43890,7 +43890,7 @@ l=$.fp().geC()
 k=B.c.eM(n.e.a.a)
 j=B.c.eM(n.f.a.a)
 s=7
-return A.v(l.tS(A.Z(["username",B.c.eM(n.d.a.a)],t.N,t.z),k,"io.supabase.finflow://login-callback/",j),$async$A8)
+return A.v(l.tS(A.Z(["username",B.c.eM(n.d.a.a)],t.N,t.z),k,"https://omarafifi-cse.github.io/FinFlow/email-confirmed.html",j),$async$A8)
 case 7:l=n.c
 if(l!=null){l.aa(t.Pu).f.ki(B.Vg)
 l=n.c

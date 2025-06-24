@@ -60,7 +60,7 @@ class _SignupScreenState extends State<SignupScreen> {
         // We can pass extra non-sensitive data like the username.
         data: {'username': _usernameController.text.trim()},
         // This is our deep link for the email confirmation.
-        emailRedirectTo: 'https://omarafifi-cse.github.io/FinFlow/email-confirmed',
+        emailRedirectTo: 'https://omarafifi-cse.github.io/FinFlow/email-confirmed.html',
       );
 
       // 4. On success, show a confirmation message and navigate back.
