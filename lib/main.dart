@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'auth/auth_gate.dart';
 import 'providers/expense_provider.dart';
@@ -12,15 +11,12 @@ import 'screens/onboarding_screen.dart';
 final supabase = Supabase.instance.client;
 
 Future<void> main() async {
-  // Load the environment variables from the .env file
-  await dotenv.load(fileName: ".env");
-
   // Ensure Flutter is initialized before running async code.
   WidgetsFlutterBinding.ensureInitialized();
   // --- Supabase Initialization ---
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: "https://fpeynvsshkecovrkuwfx.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwZXludnNzaGtlY292cmt1d2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2MjQ2ODcsImV4cCI6MjA2NjIwMDY4N30.RKoKFz-AEtw4rz-Fge2h3nHX_Eu8Wmjfygbugcz_EB8",
   );
 
   // Get instance of SharedPreferences for the onboarding check.
