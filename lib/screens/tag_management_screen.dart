@@ -154,7 +154,7 @@ class TagManagementScreen extends StatelessWidget {
                   TextField(
                     controller: tagNameController,
                     decoration: const InputDecoration(
-                      hintText: "e.g., 'Work' or 'Personal'",
+                      hintText: "e.g., 'Work'",
                     ),
                     autofocus: true,
                     textCapitalization: TextCapitalization.words,

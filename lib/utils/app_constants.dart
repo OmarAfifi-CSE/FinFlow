@@ -17,7 +17,17 @@ const Map<String, IconData> categoryIcons = {
   'Groceries': Icons.local_grocery_store,
   'Bills': Icons.receipt,
   'Entertainment': Icons.movie,
+  'Health': Icons.healing,
+  'Travel': Icons.airplanemode_active,
+  'Education': Icons.school,
+  'Gifts': Icons.card_giftcard,
+  'Family': Icons.family_restroom,
+  'Pets': Icons.pets,
+  'Home': Icons.home,
+  'Investments': Icons.trending_up,
+  'Business': Icons.business_center,
   'Salary': Icons.attach_money,
+  'Savings': Icons.savings,
 };
 
 // 2. Specific color themes for the default categories.
@@ -28,7 +38,17 @@ final Map<String, CategoryTheme> categoryThemes = {
   'Groceries': CategoryTheme(color: Colors.teal[400]!, backgroundColor: Colors.teal[50]!),
   'Bills': CategoryTheme(color: Colors.purple[400]!, backgroundColor: Colors.purple[50]!),
   'Entertainment': CategoryTheme(color: Colors.brown[400]!, backgroundColor: Colors.brown[50]!),
+  'Health': CategoryTheme(color: Colors.pink[400]!, backgroundColor: Colors.pink[50]!),
+  'Travel': CategoryTheme(color: Colors.indigo[400]!, backgroundColor: Colors.indigo[50]!),
+  'Education': CategoryTheme(color: Colors.cyan[600]!, backgroundColor: Colors.cyan[50]!),
+  'Gifts': CategoryTheme(color: Colors.yellow[800]!, backgroundColor: Colors.yellow[50]!),
+  'Family': CategoryTheme(color: Colors.lightBlue[400]!, backgroundColor: Colors.lightBlue[50]!),
+  'Pets': CategoryTheme(color: Colors.amber[600]!, backgroundColor: Colors.amber[50]!),
+  'Home': CategoryTheme(color: Colors.lightGreen[600]!, backgroundColor: Colors.lightGreen[50]!),
+  'Investments': CategoryTheme(color: Colors.lime[600]!, backgroundColor: Colors.lime[50]!),
+  'Business': CategoryTheme(color: Colors.blueGrey[400]!, backgroundColor: Colors.blueGrey[50]!),
   'Salary': CategoryTheme(color: Colors.green[700]!, backgroundColor: Colors.green[50]!),
+  'Savings': CategoryTheme(color: Colors.deepOrange[400]!, backgroundColor: Colors.deepOrange[50]!),
 };
 
 // 3. A pool of "random" colors for any new categories the user creates.

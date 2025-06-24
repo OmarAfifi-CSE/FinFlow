@@ -217,37 +217,22 @@ class ExpenseProvider with ChangeNotifier {
   Future<void> _addDefaultCategories(String userId) async {
     final List<Map<String, dynamic>> defaultCategories = [
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Food', 'is_default': true},
-      {
-        'id': uuid.v4(),
-        'user_id': userId,
-        'name': 'Transport',
-        'is_default': true,
-      },
-      {
-        'id': uuid.v4(),
-        'user_id': userId,
-        'name': 'Shopping',
-        'is_default': true,
-      },
-      {
-        'id': uuid.v4(),
-        'user_id': userId,
-        'name': 'Groceries',
-        'is_default': true,
-      },
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Transport', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Shopping', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Groceries', 'is_default': true},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Bills', 'is_default': true},
-      {
-        'id': uuid.v4(),
-        'user_id': userId,
-        'name': 'Entertainment',
-        'is_default': true,
-      },
-      {
-        'id': uuid.v4(),
-        'user_id': userId,
-        'name': 'Salary',
-        'is_default': true,
-      },
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Entertainment', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Health', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Travel', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Education', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Gifts', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Family', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pets', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Home', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Investments', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Business', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Salary', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Savings', 'is_default': true},
     ];
     await supabase.from('categories').insert(defaultCategories);
     await fetchInitialData();
@@ -258,9 +243,13 @@ class ExpenseProvider with ChangeNotifier {
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Breakfast'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Lunch'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Dinner'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Treat'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Cafe'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Restaurant'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Train'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Vacation'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Work'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Tech'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Self Care'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Car Stuff'},
     ];
     await supabase.from('tags').insert(defaultTags);
     await fetchInitialData();
