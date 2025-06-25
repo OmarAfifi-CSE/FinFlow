@@ -169,6 +169,7 @@ class _SigninScreenState extends State<SigninScreen> {
                       valMessage: "Enter your Password",
                     ),
                     const SizedBox(height: 40),
+                    /*
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Row(
@@ -183,7 +184,7 @@ class _SigninScreenState extends State<SigninScreen> {
                           ),
                         ],
                       ),
-                    ),
+                    ),*/
                     const SizedBox(height: 70),
 
                     // --- THIS IS THE ONLY UI CHANGE ---
