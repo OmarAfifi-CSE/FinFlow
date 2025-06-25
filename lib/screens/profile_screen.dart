@@ -15,8 +15,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _username = 'Loading...';
-  String _email = 'Loading...';
+  String _username = '';
+  String _email = '';
 
   @override
   void initState() {
@@ -196,22 +196,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Padding(
                     padding: const EdgeInsets.all(0),
                     child: CircleAvatar(
-                      radius: 100,
+                      radius: 80,
                       backgroundColor: Colors.teal[200],
                       child: const Icon(
                         Icons.person,
-                        size: 180,
+                        size: 140,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  // Displaying dynamic username
-                  MyCard(icon: const Icon(Icons.account_box), title: _username),
-                  // Displaying dynamic email
-                  MyCard(icon: const Icon(Icons.email_outlined), title: _email),
+                  const SizedBox(height: 15),
+                  Text(
+                    _username,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    _email,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black54,
+                    ),
+                  ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
+                    padding: const EdgeInsets.fromLTRB(15, 40, 15, 10),
                     child: MyButton(
                       button_msg: "Change Password",
                       button_icon: const Icon(Icons.lock_outline),
@@ -220,23 +232,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                       bgColor: Colors.teal,
                       fgColor: Colors.white,
-                      padding: 15,
-                      borderRadius: 30,
+                      padding: MediaQuery.of(context).size.width < 500? 10:15,
+                      borderRadius: 15,
                     ),
                   ),
 
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
+                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 40),
                     child: MyButton(
                       button_msg: "Log Out",
                       button_icon: const Icon(Icons.logout),
                       onPressed: () async {
                         await supabase.auth.signOut();
                       },
-                      bgColor: Colors.teal,
-                      fgColor: Colors.white,
-                      padding: 15,
-                      borderRadius: 30,
+                      bgColor: Colors.red[50]!,
+                      fgColor: Colors.red[700]!,
+                      padding: MediaQuery.of(context).size.width < 500? 10:15,
+                      borderRadius: 15,
                     ),
                   ),
                 ],
