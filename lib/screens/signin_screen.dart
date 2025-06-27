@@ -1,5 +1,3 @@
-// lib/screens/signin_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,13 +14,11 @@ class SigninScreen extends StatefulWidget {
 }
 
 class _SigninScreenState extends State<SigninScreen> {
-  // Your existing controllers and keys are perfect.
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> emailState = GlobalKey();
   final GlobalKey<FormState> passwordState = GlobalKey();
 
-  // --- NEW --- We add a loading state variable.
   bool _isLoading = false;
 
   @override
@@ -32,32 +28,24 @@ class _SigninScreenState extends State<SigninScreen> {
     super.dispose();
   }
 
-  /// --- NEW --- This is the new sign-in logic.
   Future<void> _signIn() async {
-    // 1. Validate both form fields using your existing keys.
     bool isEmailValid = emailState.currentState!.validate();
     bool isPasswordValid = passwordState.currentState!.validate();
 
-    // If either is invalid, stop here.
     if (!isEmailValid || !isPasswordValid) {
       return;
     }
 
-    // 2. Set the loading state to show a progress indicator.
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // 3. Attempt to sign in with Supabase Auth.
       await supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // On success, the AuthGate will automatically handle navigation.
-      // We don't need a Navigator.push here.
     } on AuthException catch (e) {
-      // 4. If Supabase returns an error, show it in a snackbar.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -67,7 +55,6 @@ class _SigninScreenState extends State<SigninScreen> {
         );
       }
     } catch (e) {
-      // 5. Handle any other unexpected errors.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -78,7 +65,6 @@ class _SigninScreenState extends State<SigninScreen> {
       }
     }
 
-    // 6. After the attempt, hide the loading indicator.
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -89,83 +75,125 @@ class _SigninScreenState extends State<SigninScreen> {
   Future<void> _showForgotPasswordDialog() async {
     final TextEditingController forgotEmailController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isDialogLoading = false;
 
     return showDialog<void>(
       context: context,
+      // Use a StatefulBuilder to manage the dialog's loading state
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Reset Password'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Text(
-                  'Enter the email address associated with your account to receive a password reset link.',
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Reset Password'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (isDialogLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else ...[
+                      const Text(
+                        'Enter the email address associated with your account to receive a password reset link.',
+                      ),
+                      const SizedBox(height: 20),
+                      MyTextfield(
+                        controller: forgotEmailController,
+                        hintText: 'Your Email',
+                        obscureText: false,
+                        valMessage: 'Please enter your email',
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 20),
-                MyTextfield(
-                  controller: forgotEmailController,
-                  hintText: 'Your Email',
-                  obscureText: false,
-                  valMessage: 'Please enter your email',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: isDialogLoading
+                      ? null
+                      : () {
+                          Navigator.of(context).pop();
+                        },
+                ),
+                TextButton(
+                  child: const Text('Send Link'),
+                  onPressed: isDialogLoading
+                      ? null
+                      : () async {
+                          if (formKey.currentState!.validate()) {
+                            setDialogState(() {
+                              isDialogLoading = true;
+                            });
+
+                            try {
+                              final email = forgotEmailController.text.trim();
+
+                              // Step 1: Call the database function to check if the user exists
+                              final bool userExists = await supabase.rpc(
+                                'check_user_exists',
+                                params: {'user_email': email},
+                              );
+
+                              if (mounted) {
+                                // Check if widget is still in the tree
+                                if (userExists) {
+                                  // Step 2: If user exists, send the reset email
+                                  await supabase.auth.resetPasswordForEmail(
+                                    email,
+                                  );
+                                  Navigator.of(
+                                    context,
+                                  ).pop(); // Close the dialog
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Password reset link sent! Please check your email.',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  // Step 3: If user does not exist, show an error
+                                  Navigator.of(
+                                    context,
+                                  ).pop(); // Close the dialog
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text(
+                                        'No account found with that email address.',
+                                      ),
+                                      backgroundColor: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                Navigator.of(context).pop(); // Close the dialog
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'An unexpected error occurred. Please try again.',
+                                    ),
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.error,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
                 ),
               ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Send Link'),
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  try {
-                    // Call Supabase to send the reset email
-                    await supabase.auth.resetPasswordForEmail(
-                      forgotEmailController.text.trim(),
-                        redirectTo: 'https://omarafifi-cse.github.io/FinFlow/reset-password.html'
-                    );
-
-                    if (mounted) {
-                      Navigator.of(context).pop(); // Close the dialog
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Password reset link sent! Please check your email.'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  } on AuthException catch (e) {
-                    if (mounted) {
-                      Navigator.of(context).pop(); // Close the dialog
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.message),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      Navigator.of(context).pop(); // Close the dialog
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('An unexpected error occurred.'),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
-                  }
-                }
-              },
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -185,7 +213,6 @@ class _SigninScreenState extends State<SigninScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // --- ALL YOUR UI CODE IS UNCHANGED ---
                     const Text(
                       textAlign: TextAlign.center,
                       "Welcome Back",
@@ -254,7 +281,6 @@ class _SigninScreenState extends State<SigninScreen> {
                       valMessage: "Enter your Password",
                     ),
                     const SizedBox(height: 40),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Row(
@@ -265,17 +291,15 @@ class _SigninScreenState extends State<SigninScreen> {
                             child: const Text(
                               'Forgot Password?',
                               style: TextStyle(
-                                  color: Colors.teal,
-                                  fontWeight: FontWeight.w500),
+                                color: Colors.teal,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 70),
-
-                    // --- THIS IS THE ONLY UI CHANGE ---
-                    // If loading, show a progress indicator. Otherwise, show the button.
                     if (_isLoading)
                       const Center(child: CircularProgressIndicator())
                     else
@@ -283,7 +307,6 @@ class _SigninScreenState extends State<SigninScreen> {
                         button_msg: 'Sign In',
                         bgColor: Colors.teal,
                         fgColor: Colors.white,
-                        // The button now calls our new _signIn function.
                         onPressed: _signIn,
                         padding: 15,
                         borderRadius: 50,

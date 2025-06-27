@@ -91,3 +91,40 @@ CREATE POLICY "Users can handle their own data" ON public.expenses
   TO authenticated
   USING ((select auth.uid()) = user_id)
   WITH CHECK ((select auth.uid()) = user_id);
+
+
+
+-- =============================================================================
+--  DATABASE FUNCTION: check_user_exists
+-- =============================================================================
+--  Description:
+--    Securely checks if an email address is already registered in the auth.users
+--    table. This is called from the app to verify if a user exists before
+--    sending a password reset email.
+--
+--  Parameters:
+--    - user_email (text): The email address to check.
+--
+--  Returns:
+--    - boolean: Returns `true` if a user with that email exists,
+--               otherwise returns `false`.
+-- =============================================================================
+create or replace function public.check_user_exists(user_email text)
+returns boolean
+language plpgsql
+-- SECURITY DEFINER is crucial. It allows this function to temporarily
+-- have higher permissions to look inside the private 'auth.users' table,
+-- which your app normally cannot access directly.
+security definer
+as $$
+begin
+  -- The 'exists' keyword is a fast and efficient way to check for a row.
+  -- It returns true as soon as it finds one match, without needing to
+  -- read the whole table.
+  return exists (
+    select 1
+    from auth.users
+    where email = user_email
+  );
+end;
+$$;
