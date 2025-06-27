@@ -89,15 +89,6 @@ FinFlow is a full-featured application designed for a seamless user experience. 
 
 ---
 
-### 🌍 One Codebase, Every Platform
-
-*(This section can remain as it was, to powerfully demonstrate the cross-platform capability after showcasing the features).*
-
-| 📱 Mobile (Android/iOS)  🌐 Web  🖥️ Desktop (Windows) |
-| :---: |
-| ![FinFlow on all platforms](https://via.placeholder.com/400x800.png?text=Mobile+Dashboard)
----
-
 ## ✨ Features
 
 FinFlow is packed with features to make financial management simple and effective.
@@ -107,8 +98,8 @@ FinFlow is packed with features to make financial management simple and effectiv
 -   **Dashboard Overview:** Get an instant snapshot of your total balance, total income, and total expenses.
 -   **Transaction Management:** Effortlessly add, edit, or delete income and expense records.
 -   **Smart Categorization:** Assign categories to your transactions for better analysis (e.g., Food, Transport, Bills).
--   **Custom Tags:** Add custom tags to transactions for granular filtering (e.g., #Work, #Vacation).
--   **Dynamic Filtering:** View your transaction history chronologically or grouped by category.
+-   **Custom Tags:** Add custom tags for better organization of your spending (e.g., #Work, #Vacation).
+-   **Dynamic Filtering:** View your transaction history by date or grouped by category.
 -   **Category & Tag Management:** A dedicated space to create, view, and delete your custom categories and tags.
 -   **User Profile:** View your account details and securely change your password.
 -   **Persistent Data:** All your data is securely stored and synced across your devices using the Supabase database.
@@ -125,7 +116,6 @@ This project leverages a modern, powerful tech stack to deliver a high-quality e
 | **Flutter** | Google's UI toolkit for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase. |
 | **Supabase** | The open-source Firebase alternative. Used for Database, Authentication, and Auto-generated APIs. |
 | **Provider** | A robust and simple state management solution for Flutter. |
-| **`flutter_dotenv`** | For securely managing environment variables and protecting sensitive API keys. |
 | **Dart** | The programming language used to build the application. |
 
 ---
@@ -143,7 +133,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/your-username/FinFlow.git](https://github.com/your-username/FinFlow.git)
+    git clone https://github.com/OmarAfifi-CSE/FinFlow.git
     cd FinFlow
     ```
 
