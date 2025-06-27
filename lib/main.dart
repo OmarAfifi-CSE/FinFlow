@@ -18,6 +18,10 @@ Future<void> main() async {
     url: "https://fpeynvsshkecovrkuwfx.supabase.co",
     anonKey:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwZXludnNzaGtlY292cmt1d2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2MjQ2ODcsImV4cCI6MjA2NjIwMDY4N30.RKoKFz-AEtw4rz-Fge2h3nHX_Eu8Wmjfygbugcz_EB8",
+    // This tells the Supabase client to use the simpler token flow, which is compatible with the web-based password reset page.
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.implicit,
+    ),
   );
 
   // Get instance of SharedPreferences for the onboarding check.
