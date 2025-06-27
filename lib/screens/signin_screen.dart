@@ -144,6 +144,8 @@ class _SigninScreenState extends State<SigninScreen> {
                                   // Step 2: If user exists, send the reset email
                                   await supabase.auth.resetPasswordForEmail(
                                     email,
+                                    redirectTo:
+                                        'https://omarafifi-cse.github.io/FinFlow/reset-password.html',
                                   );
                                   Navigator.of(
                                     context,

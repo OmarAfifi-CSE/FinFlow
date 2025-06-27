@@ -43948,7 +43948,7 @@ j=t.d
 s=m?11:13
 break
 case 11:s=14
-return A.u(l.gen().xp(n),$async$$0)
+return A.u(l.gen().xp(n,"https://omarafifi-cse.github.io/FinFlow/reset-password.html"),$async$$0)
 case 14:A.bV(k,!1).d0()
 k.a8(j).f.i7(B.Vb)
 s=12
@@ -90901,9 +90901,9 @@ break
 case 10:case 6:return A.z(null,r)
 case 1:return A.y(p.at(-1),r)}})
 return A.A($async$lc,r)},
-xp(a){return this.aw2(a)},
-aw2(a){var s=0,r=A.B(t.H),q=this,p,o,n,m,l
-var $async$xp=A.x(function(b,c){if(b===1)return A.y(c,r)
+xp(a,b){return this.aw2(a,b)},
+aw2(a,b){var s=0,r=A.B(t.H),q=this,p,o,n,m,l
+var $async$xp=A.x(function(c,d){if(c===1)return A.y(d,r)
 while(true)switch(s){case 0:s=q.at===B.ex?2:4
 break
 case 2:p=A.aKo()
@@ -90915,7 +90915,7 @@ break
 case 4:o=null
 case 3:n=t.N
 m=A.Z(["captcha_token",null],n,t.T)
-l=A.pG(A.Z(["email",a,"gotrue_meta_security",m,"code_challenge",o,"code_challenge_method",o!=null?"s256":null],n,t.X),q.e,null,null,null,null)
+l=A.pG(A.Z(["email",a,"gotrue_meta_security",m,"code_challenge",o,"code_challenge_method",o!=null?"s256":null],n,t.X),q.e,null,null,null,b)
 s=6
 return A.u(q.gmx().kf(q.d+"/recover",B.ea,l),$async$xp)
 case 6:return A.z(null,r)}})
