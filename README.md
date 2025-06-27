@@ -139,17 +139,19 @@ To get a local copy up and running, follow these simple steps.
 
 2.  **Set up your Supabase Project:**
     -   Go to [Supabase](https://supabase.com) and create a new project.
-    -   Inside your project, navigate to the **SQL Editor** and run the schema setup script to create the necessary tables. *(You should create a `schema.sql` file and add it to your repo for others to use).*
-    -   Enable **Row Level Security (RLS)** on your tables for data privacy.
+    -   Inside your project, navigate to the **SQL Editor** and run the `schema.sql` script from this repository to create the necessary tables and security policies.
 
-3.  **Configure Environment Variables:**
-    -   In the root of the project, create a file named `.env`.
-    -   Copy the contents of `.env.example` (if you created one) or use the template below.
+3.  **Configure Supabase Credentials:**
     -   Go to your Supabase project's **Project Settings > API** to find your keys.
-    -   Add your Supabase URL and Anon Key to the `.env` file:
-        ```env
-        SUPABASE_URL=YOUR_SUPABASE_URL
-        SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+    -   Open the file `lib/main.dart`.
+    -   Paste your Supabase **URL** and **anonKey** directly into the `Supabase.initialize` function:
+        ```dart
+        // In lib/main.dart
+
+        await Supabase.initialize(
+          url: 'YOUR_SUPABASE_URL_HERE',
+          anonKey: 'YOUR_SUPABASE_ANON_KEY_HERE',
+        );
         ```
 
 4.  **Install dependencies:**
