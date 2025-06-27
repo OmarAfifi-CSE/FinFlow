@@ -86,6 +86,91 @@ class _SigninScreenState extends State<SigninScreen> {
     }
   }
 
+  Future<void> _showForgotPasswordDialog() async {
+    final TextEditingController forgotEmailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Text(
+                  'Enter the email address associated with your account to receive a password reset link.',
+                ),
+                const SizedBox(height: 20),
+                MyTextfield(
+                  controller: forgotEmailController,
+                  hintText: 'Your Email',
+                  obscureText: false,
+                  valMessage: 'Please enter your email',
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Send Link'),
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    // Call Supabase to send the reset email
+                    await supabase.auth.resetPasswordForEmail(
+                      forgotEmailController.text.trim(),
+                        redirectTo: 'https://omarafifi-cse.github.io/FinFlow/reset-password.html'
+                    );
+
+                    if (mounted) {
+                      Navigator.of(context).pop(); // Close the dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Password reset link sent! Please check your email.'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } on AuthException catch (e) {
+                    if (mounted) {
+                      Navigator.of(context).pop(); // Close the dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.message),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      Navigator.of(context).pop(); // Close the dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('An unexpected error occurred.'),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,22 +254,24 @@ class _SigninScreenState extends State<SigninScreen> {
                       valMessage: "Enter your Password",
                     ),
                     const SizedBox(height: 40),
-                    /*
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              color: Colors.teal,
-                              fontWeight: FontWeight.w500,
+                          InkWell(
+                            onTap: _showForgotPasswordDialog,
+                            child: const Text(
+                              'Forgot Password?',
+                              style: TextStyle(
+                                  color: Colors.teal,
+                                  fontWeight: FontWeight.w500),
                             ),
                           ),
                         ],
                       ),
-                    ),*/
+                    ),
                     const SizedBox(height: 70),
 
                     // --- THIS IS THE ONLY UI CHANGE ---
