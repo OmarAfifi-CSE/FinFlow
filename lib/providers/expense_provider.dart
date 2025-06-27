@@ -153,6 +153,7 @@ class ExpenseProvider with ChangeNotifier {
 
   Future<void> deleteCategory(String id) async {
     _categories.removeWhere((category) => category.id == id);
+    _expenses.removeWhere((expense) => expense.categoryId == id);
     notifyListeners();
     try {
       await supabase.from('categories').delete().eq('id', id);

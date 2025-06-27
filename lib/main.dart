@@ -15,9 +15,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // --- Supabase Initialization ---
   await Supabase.initialize(
-    url: "https://fpeynvsshkecovrkuwfx.supabase.co",
-    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwZXludnNzaGtlY292cmt1d2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2MjQ2ODcsImV4cCI6MjA2NjIwMDY4N30.RKoKFz-AEtw4rz-Fge2h3nHX_Eu8Wmjfygbugcz_EB8",
-  );
+    url: "https://zitayqerirlyvqsqseqr.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppdGF5cWVyaXJseXZxc3FzZXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5ODAyNDgsImV4cCI6MjA2NjU1NjI0OH0.NP09h25ADzr7q46io1lvoY-DjuZY30RWxo7xW6dshVM");
 
   // Get instance of SharedPreferences for the onboarding check.
   final prefs = await SharedPreferences.getInstance();

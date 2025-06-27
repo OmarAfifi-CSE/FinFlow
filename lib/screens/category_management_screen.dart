@@ -166,7 +166,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Are you sure?'),
         content: Text(
-          'Do you want to delete the category "${category.name}"? This action cannot be undone.',
+          'Deleting "${category.name}" will also delete all its transactions. This action cannot be undone.',
         ),
         actions: <Widget>[
           TextButton(
