@@ -46,7 +46,7 @@ FinFlow is a full-featured application designed for a seamless user experience. 
     <td width="50%" valign="top">
       <h4 align="center">Secure Authentication</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//2-%20Signin_Screenshot.png?text=Sign-In+Screen" alt="Sign-In" width="300">
+        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//2-%20Signin_Screen.png?text=Sign-In+Screen" alt="Sign-In" width="300">
       </p>
       <p>Robust and secure user sign-up and sign-in powered by Supabase Auth. Your financial data is protected from the start.</p>
     </td>
