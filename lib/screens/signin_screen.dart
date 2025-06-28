@@ -151,11 +151,11 @@ class _SigninScreenState extends State<SigninScreen> {
                                     context,
                                   ).pop(); // Close the dialog
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
                                         'Password reset link sent! Please check your email.',
                                       ),
-                                      backgroundColor: Colors.green,
+                                      backgroundColor: Colors.green[600],
                                     ),
                                   );
                                 } else {
