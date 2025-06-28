@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth/auth_gate.dart';
 import 'providers/expense_provider.dart';
 import 'screens/onboarding_screen.dart';
+import 'widgets/connectivity_monitor.dart';
 
 // A global variable to easily access the Supabase client from anywhere in the app
 final supabase = Supabase.instance.client;
@@ -13,7 +14,8 @@ final supabase = Supabase.instance.client;
 Future<void> main() async {
   // Ensure Flutter is initialized before running async code.
   WidgetsFlutterBinding.ensureInitialized();
-  // --- Supabase Initialization ---
+
+  // Initialize Supabase.
   await Supabase.initialize(
     url: "https://fpeynvsshkecovrkuwfx.supabase.co",
     anonKey:
@@ -26,20 +28,15 @@ Future<void> main() async {
 
   // Get instance of SharedPreferences for the onboarding check.
   final prefs = await SharedPreferences.getInstance();
-  // Check if onboarding has been completed. Default to false if not found.
   final bool onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-  runApp(MyApp(prefs: prefs, onboardingComplete: onboardingComplete));
+
+  runApp(MyApp(onboardingComplete: onboardingComplete));
 }
 
 class MyApp extends StatelessWidget {
-  final SharedPreferences prefs;
   final bool onboardingComplete;
 
-  const MyApp({
-    super.key,
-    required this.prefs,
-    required this.onboardingComplete,
-  });
+  const MyApp({super.key, required this.onboardingComplete});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +52,14 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
           ).copyWith(secondary: Colors.white),
         ),
-        home: onboardingComplete ? const AuthGate() : OnboardingScreen(),
+        // The builder property ensures that ConnectivityMonitor has access to the context provided by MaterialApp, including ScaffoldMessenger.
+        builder: (context, child) {
+          return ConnectivityMonitor(
+            // The 'child' here is the entire navigation stack of the app.
+            child: child!,
+          );
+        },
+        home: onboardingComplete ? const AuthGate() : const OnboardingScreen(),
       ),
     );
   }
