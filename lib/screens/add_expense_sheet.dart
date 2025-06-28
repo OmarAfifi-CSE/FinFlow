@@ -374,7 +374,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     required BuildContext context,
     required String title,
     required String hint,
-    required Future<void> Function(String) onAdd,
+    required ExpenseProvider provider,
+    required Future<dynamic> Function(String) addFunction,
+    required void Function(String) onSuccess,
   }) {
     final TextEditingController controller = TextEditingController();
     String? dialogErrorMessage;
@@ -417,7 +419,19 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                   onPressed: () async {
                     final name = toTitleCase(controller.text.trim());
                     if (name.isNotEmpty) {
-                      await onAdd(name);
+                      // Call the provided add function (e.g., provider.addCategory)
+                      final result = await addFunction(name);
+                      if (result != null) {
+                        // On success, close the dialog and call the onSuccess callback
+                        if (mounted) Navigator.of(dialogContext).pop();
+                        onSuccess(result.id);
+                      } else {
+                        // On failure, show an error inside the dialog
+                        setDialogState(() {
+                          dialogErrorMessage =
+                              'An item with this name already exists.';
+                        });
+                      }
                     } else {
                       setDialogState(() {
                         dialogErrorMessage = 'Name cannot be empty.';
@@ -445,21 +459,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                 context: context,
                 title: 'Add New Category',
                 hint: "e.g., 'Health'",
-                onAdd: (name) async {
-                  final newCategory = await provider.addCategory(name);
-                  if (mounted && newCategory != null) {
-                    Navigator.pop(context); // Close dialog on success
-                    setState(() => _selectedCategoryId = newCategory.id);
-                  } else if (mounted) {
-                    // This will be handled by the dialog's state, but as a fallback:
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Category already exists or failed to add.',
-                        ),
-                      ),
-                    );
-                  }
+                provider: provider,
+                addFunction: (name) => provider.addCategory(name),
+                onSuccess: (newId) {
+                  setState(() => _selectedCategoryId = newId);
                 },
               );
             } else {
@@ -504,18 +507,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                 context: context,
                 title: 'Add New Tag',
                 hint: "e.g., 'Work'",
-                onAdd: (name) async {
-                  final newTag = await provider.addTag(name);
-                  if (mounted && newTag != null) {
-                    Navigator.pop(context); // Close dialog on success
-                    setState(() => _selectedTagId = newTag.id);
-                  } else if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tag already exists or failed to add.'),
-                      ),
-                    );
-                  }
+                provider: provider,
+                addFunction: (name) => provider.addTag(name),
+                onSuccess: (newId) {
+                  setState(() => _selectedTagId = newId);
                 },
               );
             } else {
