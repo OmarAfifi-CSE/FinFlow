@@ -116,6 +116,9 @@ language plpgsql
 -- have higher permissions to look inside the private 'auth.users' table,
 -- which your app normally cannot access directly.
 security definer
+-- By setting a search_path, we prevent a malicious user from manipulating
+-- where the function looks for tables, resolving the security warning.
+set search_path = 'public'
 as $$
 begin
   -- The 'exists' keyword is a fast and efficient way to check for a row.
