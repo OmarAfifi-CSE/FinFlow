@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../componants/my_textfield.dart';
 import '../componants/wave_clipper.dart';
 import '../componants/my_button.dart';
-import '../componants/my_card.dart';
 import '../main.dart'; // Import for the global supabase client
 
 class ProfileScreen extends StatefulWidget {
