@@ -10,6 +10,7 @@ class CustomPrimaryButton extends StatelessWidget {
   final double? borderRadius;
   final double? elevation;
   final void Function()? onPressed;
+  final double? verticalPadding;
   final bool isLoading;
 
   const CustomPrimaryButton({
@@ -21,6 +22,7 @@ class CustomPrimaryButton extends StatelessWidget {
     this.borderRadius,
     this.elevation,
     this.onPressed,
+    this.verticalPadding,
     this.isLoading = false,
   });
 
@@ -31,7 +33,7 @@ class CustomPrimaryButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: buttonColor ?? AppColors.primaryColor,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: EdgeInsets.symmetric(vertical: verticalPadding ?? 15),
         elevation: elevation ?? 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius ?? 30),

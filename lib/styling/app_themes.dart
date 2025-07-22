@@ -17,5 +17,8 @@ class AppThemes {
       buttonColor: AppColors.primaryColor,
       disabledColor: AppColors.secondaryColor,
     ),
+    colorScheme: ColorScheme.fromSwatch(
+      primarySwatch: Colors.teal,
+    ).copyWith(secondary: Colors.white),
   );
 }
