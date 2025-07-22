@@ -1,7 +1,11 @@
+import 'package:expense_manager/styling/app_text_styles.dart';
+import 'package:expense_manager/widgets/custom_primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../auth/auth_gate.dart';
+import '../routing/app_routes.dart';
+import '../styling/app_assets.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -11,27 +15,19 @@ class OnboardingScreen extends StatelessWidget {
     final content = Column(
       children: [
         Image(
-          image: AssetImage('assets/images/Onboarding.png'),
+          image: AssetImage(AppAssets.onboardingImage),
           width: MediaQuery.of(context).size.width < 500
               ? MediaQuery.of(context).size.width
               : 300,
-          fit: BoxFit.fitWidth,
+          fit: BoxFit.fill,
         ),
-
         SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-
         Text(
           "Spend Smarter\nSave More",
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 40,
-            color: Color(0xff438883),
-          ),
+          style: AppTextStyles.primaryHeadlineStyle.copyWith(fontSize: 35),
         ),
-
         SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: MediaQuery.of(context).size.width < 500
@@ -40,36 +36,20 @@ class OnboardingScreen extends StatelessWidget {
           ),
           child: SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              // Inside your ElevatedButton's onPressed:
+            child: CustomPrimaryButton(
+              buttonText: 'Get Started',
+              elevation: 5,
               onPressed: () async {
-                // Get the instance of SharedPreferences
                 final prefs = await SharedPreferences.getInstance();
-                // Save the flag
                 await prefs.setBool('onboarding_complete', true);
-                // Navigate to the home screen and remove the onboarding screen from the history
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthGate()),
-                );
+                if (context.mounted) {
+                  context.pushReplacementNamed(AppRoutes.authGate);
+                }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xff438883),
-                foregroundColor: Colors.white,
-                elevation: 5,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                textStyle: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w500,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text("Get Started"),
             ),
           ),
         ),
+        SizedBox(height: 50),
       ],
     );
     return Scaffold(

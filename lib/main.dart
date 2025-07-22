@@ -1,3 +1,5 @@
+import 'package:expense_manager/routing/router_generation_config.dart';
+import 'package:expense_manager/styling/app_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,16 +44,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ExpenseProvider(),
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'FinFlow',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.teal,
-          fontFamily: 'Inter',
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.teal,
-          ).copyWith(secondary: Colors.white),
-        ),
+        theme: AppThemes.lightTheme,
         // The builder property ensures that ConnectivityMonitor has access to the context provided by MaterialApp, including ScaffoldMessenger.
         builder: (context, child) {
           return ConnectivityMonitor(
@@ -59,7 +55,7 @@ class MyApp extends StatelessWidget {
             child: child!,
           );
         },
-        home: onboardingComplete ? const AuthGate() : const OnboardingScreen(),
+        routerConfig: RouterGenerationConfig.goRouter,
       ),
     );
   }
