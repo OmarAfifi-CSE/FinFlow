@@ -1,8 +1,11 @@
+import 'package:expense_manager/auth/widgets/custom_text_field_label.dart';
 import 'package:expense_manager/widgets/custom_primary_button.dart';
 import 'package:expense_manager/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../routing/app_routes.dart';
 import '../styling/app_text_styles.dart';
 import 'signup_screen.dart';
 import '../main.dart'; // Import to use the global 'supabase' client
@@ -117,7 +120,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   onPressed: isDialogLoading
                       ? null
                       : () {
-                          Navigator.of(context).pop();
+                          context.pop();
                         },
                   child: const Text('Cancel'),
                 ),
@@ -149,9 +152,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                         'https://omarafifi-cse.github.io/FinFlow/reset-password.html',
                                   );
                                   if (context.mounted) {
-                                    Navigator.of(
-                                      context,
-                                    ).pop(); // Close the dialog
+                                    context.pop(); // Close the dialog
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -164,9 +165,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                 } else {
                                   // Step 3: If user does not exist, show an error
                                   if (context.mounted) {
-                                    Navigator.of(
-                                      context,
-                                    ).pop(); // Close the dialog
+                                    context.pop(); // Close the dialog
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: const Text(
@@ -182,7 +181,7 @@ class _SigninScreenState extends State<SigninScreen> {
                               }
                             } catch (e) {
                               if (context.mounted) {
-                                Navigator.of(context).pop(); // Close the dialog
+                                context.pop(); // Close the dialog
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text(
@@ -229,20 +228,9 @@ class _SigninScreenState extends State<SigninScreen> {
                   style: AppTextStyles.primaryHeadlineStyle,
                 ),
                 const SizedBox(height: 25),
-                const Row(
-                  children: [
-                    SizedBox(width: 5),
-                    Icon(Icons.mail_outlined, size: 12),
-                    Text(
-                      textAlign: TextAlign.start,
-                      " Your email",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ],
+                CustomTextFieldLabel(
+                  icon: Icons.mail_outlined,
+                  label: "Your email",
                 ),
                 const SizedBox(height: 10),
                 CustomTextFormField(
@@ -253,20 +241,9 @@ class _SigninScreenState extends State<SigninScreen> {
                   valMessage: "Please enter your email",
                 ),
                 const SizedBox(height: 30),
-                const Row(
-                  children: [
-                    SizedBox(width: 5),
-                    Icon(Icons.lock_outline, size: 12),
-                    Text(
-                      textAlign: TextAlign.start,
-                      " Your Password",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ],
+                CustomTextFieldLabel(
+                  icon: Icons.lock_outline,
+                  label: "Your password",
                 ),
                 const SizedBox(height: 10),
                 CustomTextFormField(
@@ -299,7 +276,6 @@ class _SigninScreenState extends State<SigninScreen> {
                   CustomPrimaryButton(
                     buttonText: 'Sign In',
                     onPressed: _signIn,
-                    verticalPadding: 10,
                   ),
                 const SizedBox(height: 15),
                 Row(
@@ -312,12 +288,7 @@ class _SigninScreenState extends State<SigninScreen> {
                     const SizedBox(width: 4),
                     InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignupScreen(),
-                          ),
-                        );
+                        context.pushNamed(AppRoutes.registerScreen);
                       },
                       child: const Text(
                         'Sign Up',

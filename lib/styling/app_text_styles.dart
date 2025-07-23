@@ -21,7 +21,7 @@ class AppTextStyles {
   static TextStyle whiteTextStyle = TextStyle(
     color: AppColors.whiteColor,
     fontFamily: AppFonts.mainFontName,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: FontWeight.w500,
   );
 }
