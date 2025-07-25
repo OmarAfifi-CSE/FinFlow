@@ -43,7 +43,7 @@ class OnboardingScreen extends StatelessWidget {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('onboarding_complete', true);
                 if (context.mounted) {
-                  context.pushReplacementNamed(AppRoutes.homeScreen);
+                  context.pushReplacementNamed(AppRoutes.mainScreen);
                 }
               },
             ),

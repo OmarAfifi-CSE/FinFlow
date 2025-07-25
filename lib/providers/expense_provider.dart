@@ -10,10 +10,11 @@ import '../main.dart'; // To get the global 'supabase' client
 const uuid = Uuid();
 
 class ExpenseProvider with ChangeNotifier {
-  // --- State Management ---
   bool _isLoading = true;
-
+  bool _isDataLoaded = false;
   bool get isLoading => _isLoading;
+  bool get isDataLoaded => _isDataLoaded;
+
 
   // --- Data Lists ---
   List<Expense> _expenses = [];
@@ -22,9 +23,7 @@ class ExpenseProvider with ChangeNotifier {
 
   // --- Public Getters ---
   List<Expense> get expenses => _expenses;
-
   List<ExpenseCategory> get categories => _categories;
-
   List<Tag> get tags => _tags;
 
   // --- Calculated Getters ---
@@ -41,6 +40,9 @@ class ExpenseProvider with ChangeNotifier {
 
   // --- Data Fetching from Supabase ---
   Future<void> fetchInitialData() async {
+    if (_isDataLoaded) {
+      return;
+    }
     _isLoading = true;
     Future.delayed(Duration.zero, () => notifyListeners());
 
@@ -61,6 +63,8 @@ class ExpenseProvider with ChangeNotifier {
           .toList();
       _tags = (results[2] as List).map((item) => Tag.fromJson(item)).toList();
 
+      _isDataLoaded = true;
+
       if (_categories.isEmpty) await _addDefaultCategories(userId);
       if (_tags.isEmpty) await _addDefaultTags(userId);
     } catch (e) {
@@ -70,6 +74,7 @@ class ExpenseProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
 
   // --- CRUD Operations ---
 
@@ -109,11 +114,11 @@ class ExpenseProvider with ChangeNotifier {
   }
 
   Future<ExpenseCategory?> addCategory(
-    String name, {
-    bool isDefault = false,
-  }) async {
+      String name, {
+        bool isDefault = false,
+      }) async {
     if (_categories.any(
-      (cat) => cat.name.toLowerCase() == name.toLowerCase(),
+          (cat) => cat.name.toLowerCase() == name.toLowerCase(),
     )) {
       debugPrint('Category with this name already exists locally.');
       return null;
@@ -209,7 +214,7 @@ class ExpenseProvider with ChangeNotifier {
   // --- Helper and Default Data functions ---
   ExpenseCategory getCategoryForId(String categoryId) {
     return categories.firstWhere(
-      (cat) => cat.id == categoryId,
+          (cat) => cat.id == categoryId,
       orElse: () =>
           ExpenseCategory(id: 'unknown', name: 'Unknown', isDefault: false),
     );

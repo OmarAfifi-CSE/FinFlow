@@ -1,16 +1,11 @@
-import 'package:expense_manager/screens/profile_screen.dart';
+import 'package:expense_manager/providers/expense_provider.dart';
+import 'package:expense_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
-
-import '../main.dart'; // Import to use the global 'supabase' client
-import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 import 'add_expense_sheet.dart';
-import 'category_management_screen.dart';
-import 'tag_management_screen.dart';
-import '../utils/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,47 +14,14 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-// Your helper class for the sticky header remains unchanged.
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-
-  final Widget _tabBar;
-
-  @override
-  double get minExtent => 140;
-
-  @override
-  double get maxExtent => 150;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(color: Colors.grey[100], child: _tabBar);
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
-}
-
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ExpenseProvider>(context, listen: false).fetchInitialData();
-    });
   }
 
   @override
@@ -68,197 +30,32 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  void _onPageTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  Widget _buildCurrentPage() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildHomePageContent();
-      case 1:
-        return const CategoryManagementScreen();
-      case 2:
-        return const TagManagementScreen();
-      case 3:
-        return const ProfileScreen();
-      default:
-        return _buildHomePageContent();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF2E9A91);
-
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          'FinFlow',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
-        ),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, size: 30),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          tooltip: 'Open menu',
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: primaryColor),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+    return Consumer<ExpenseProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && !provider.isDataLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverToBoxAdapter(child: _buildBalanceCard(provider)),
+              SliverPersistentHeader(
+                delegate: _SliverAppBarDelegate(_buildTabBar()),
+                pinned: true,
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home, color: primaryColor),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-                _onPageTapped(0);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.category, color: primaryColor),
-              title: const Text('Manage Categories'),
-              onTap: () {
-                Navigator.pop(context);
-                _onPageTapped(1);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.tag, color: primaryColor),
-              title: const Text('Manage Tags'),
-              onTap: () {
-                Navigator.pop(context);
-                _onPageTapped(2);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: primaryColor),
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                _onPageTapped(3);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () async {
-                Navigator.pop(context);
-                await supabase.auth.signOut();
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Consumer<ExpenseProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return _buildCurrentPage();
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const AddExpenseSheet(),
-          );
-        },
-        tooltip: 'Add Transaction',
-        backgroundColor: primaryColor,
-        elevation: 4.0,
-        child: const Icon(Icons.add, size: 30),
-      ),
-      bottomNavigationBar: _buildBottomAppBar(),
-    );
-  }
-
-  Widget _buildHomePageContent() {
-    final provider = Provider.of<ExpenseProvider>(context);
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverToBoxAdapter(child: _buildBalanceCard(provider)),
-          SliverPersistentHeader(
-            delegate: _SliverAppBarDelegate(_buildTabBar()),
-            pinned: true,
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildExpensesByDate(context),
+              _buildExpensesByCategory(context),
+            ],
           ),
-        ];
+        );
       },
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildExpensesByDate(context),
-          _buildExpensesByCategory(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomAppBar() {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      height: 65,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(icon: Icons.home, index: 0),
-                _buildNavItem(icon: Icons.category, index: 1),
-                const SizedBox(width: 40),
-                _buildNavItem(icon: Icons.tag, index: 2),
-                _buildNavItem(icon: Icons.person, index: 3),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({required IconData icon, required int index}) {
-    return InkWell(
-      onTap: () => _onPageTapped(index),
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              icon,
-              color: _selectedIndex == index
-                  ? const Color(0xFF2E9A91)
-                  : Colors.grey[600],
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -486,7 +283,6 @@ class _HomeScreenState extends State<HomeScreen>
     final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
     final String amountPrefix = isIncome ? '+' : '-';
     final String formattedDate = DateFormat.yMMMd().format(expense.date);
-
     return InkWell(
       onTap: () {
         showModalBottomSheet(
@@ -521,5 +317,31 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+
+  final Widget _tabBar;
+
+  @override
+  double get minExtent => 140;
+
+  @override
+  double get maxExtent => 150;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: Colors.grey[100], child: _tabBar);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

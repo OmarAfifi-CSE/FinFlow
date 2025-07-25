@@ -1,26 +1,35 @@
 import 'package:expense_manager/auth/signin_screen.dart';
 import 'package:expense_manager/auth/signup_screen.dart';
+import 'package:expense_manager/screens/category_management_screen.dart';
+import 'package:expense_manager/screens/home_screen.dart';
+import 'package:expense_manager/screens/main_screen.dart';
+import 'package:expense_manager/screens/onboarding_screen.dart';
+import 'package:expense_manager/screens/profile_screen.dart';
+import 'package:expense_manager/screens/tag_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../main.dart';
-import '../screens/home_screen.dart';
-import '../screens/onboarding_screen.dart';
+import '../providers/expense_provider.dart';
 import 'app_routes.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
     stream.asBroadcastStream().listen((_) {
       notifyListeners();
     });
   }
 }
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 class RouterGenerationConfig {
   static GoRouter goRouter() => GoRouter(
+    navigatorKey: _rootNavigatorKey,
     refreshListenable: GoRouterRefreshStream(supabase.auth.onAuthStateChange),
-    initialLocation: AppRoutes.homeScreen,
+    initialLocation: AppRoutes.mainScreen,
     routes: [
       GoRoute(
         path: AppRoutes.onboardingScreen,
@@ -37,39 +46,82 @@ class RouterGenerationConfig {
         name: AppRoutes.registerScreen,
         builder: (context, state) => const SignupScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.homeScreen,
-        name: AppRoutes.homeScreen,
-        builder: (context, state) => const HomeScreen(),
+
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          final expenseProvider = Provider.of<ExpenseProvider>(
+            context,
+            listen: false,
+          );
+          if (supabase.auth.currentUser != null &&
+              !expenseProvider.isDataLoaded) {
+            expenseProvider.fetchInitialData();
+          }
+          return MainScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.mainScreen,
+                name: AppRoutes.mainScreen,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.categoriesScreen,
+                name: AppRoutes.categoriesScreen,
+                builder: (context, state) => const CategoryManagementScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.tagsScreen,
+                name: AppRoutes.tagsScreen,
+                builder: (context, state) => const TagManagementScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profileScreen,
+                name: AppRoutes.profileScreen,
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     redirect: (context, state) async {
       final loggedIn = supabase.auth.currentUser != null;
-
       final prefs = await SharedPreferences.getInstance();
       final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
-      // القانون 1: لو onboarding مخلصش، وديه هناك الأول
       if (!onboardingComplete) {
         return state.matchedLocation == AppRoutes.onboardingScreen
             ? null
             : AppRoutes.onboardingScreen;
       }
 
-      final isGoingToLoginOrRegister = state.matchedLocation == AppRoutes.loginScreen ||
+      final isGoingToAuthScreens =
+          state.matchedLocation == AppRoutes.loginScreen ||
           state.matchedLocation == AppRoutes.registerScreen;
 
-      // القانون 2: لو المستخدم مش مسجل دخول وبيحاول يروح لصفحة محمية، وديه لصفحة الدخول
-      if (!loggedIn && !isGoingToLoginOrRegister) {
+      if (!loggedIn && !isGoingToAuthScreens) {
         return AppRoutes.loginScreen;
       }
 
-      // القانون 3: لو مسجل دخول وبيحاول يروح لصفحة الدخول، وديه للهوم
-      if (loggedIn && isGoingToLoginOrRegister) {
-        return AppRoutes.homeScreen;
+      if (loggedIn && isGoingToAuthScreens) {
+        return AppRoutes.mainScreen;
       }
 
-      // لو كل القوانين تمام، سيبه يكمل طريقه
       return null;
     },
   );
