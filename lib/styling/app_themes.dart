@@ -20,5 +20,8 @@ class AppThemes {
     colorScheme: ColorScheme.fromSwatch(
       primarySwatch: Colors.teal,
     ).copyWith(secondary: Colors.white),
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    hoverColor: Colors.transparent,
   );
 }

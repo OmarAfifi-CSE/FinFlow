@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import '../main.dart';
+import '../styling/app_assets.dart';
+import '../styling/app_colors.dart';
 import 'add_expense_sheet.dart';
 
-// HomeScreen now acts as the UI "Shell"
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key, required this.navigationShell});
 
@@ -16,9 +18,16 @@ class MainScreen extends StatelessWidget {
     );
   }
 
+  void _showAddExpenseSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const AddExpenseSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF2E9A91);
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
@@ -30,7 +39,7 @@ class MainScreen extends StatelessWidget {
           'FinFlow',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
         ),
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -44,41 +53,44 @@ class MainScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             const DrawerHeader(
-              decoration: BoxDecoration(color: primaryColor),
+              decoration: BoxDecoration(color: AppColors.primaryColor),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.home, color: primaryColor),
+              leading: const Icon(Icons.home, color: AppColors.primaryColor),
               title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _onPageTapped(context, 0); // Go to branch 0
               },
             ),
             ListTile(
-              leading: const Icon(Icons.category, color: primaryColor),
+              leading: const Icon(
+                Icons.category,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Manage Categories'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _onPageTapped(context, 1); // Go to branch 1
               },
             ),
             ListTile(
-              leading: const Icon(Icons.tag, color: primaryColor),
+              leading: const Icon(Icons.tag, color: AppColors.primaryColor),
               title: const Text('Manage Tags'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _onPageTapped(context, 2); // Go to branch 2
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: primaryColor),
+              leading: const Icon(Icons.person, color: AppColors.primaryColor),
               title: const Text('Profile'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _onPageTapped(context, 3); // Go to branch 3
               },
             ),
@@ -87,82 +99,94 @@ class MainScreen extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout'),
               onTap: () async {
-                Navigator.pop(context);
+                context.pop();
                 await supabase.auth.signOut();
-                // Router will automatically redirect to the login screen
               },
             ),
           ],
         ),
       ),
-      // The body is now the currently active page provided by the router
       body: navigationShell,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'main_fab',
-        shape: const CircleBorder(),
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const AddExpenseSheet(),
-          );
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: navigationShell.currentIndex < 2
+            ? navigationShell.currentIndex
+            : navigationShell.currentIndex + 1,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.primaryColor,
+        unselectedItemColor: Colors.grey[600],
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        iconSize: 30,
+        onTap: (index) {
+          if (index == 2) {
+            _showAddExpenseSheet(context);
+          } else {
+            _onPageTapped(context, index < 2 ? index : index - 1);
+          }
         },
-        tooltip: 'Add Transaction',
-        backgroundColor: primaryColor,
-        elevation: 4.0,
-        child: const Icon(Icons.add, size: 30),
-      ),
-      bottomNavigationBar: _buildBottomAppBar(context),
-    );
-  }
-
-  Widget _buildBottomAppBar(BuildContext context) {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      height: 65,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(context, icon: Icons.home, index: 0),
-                _buildNavItem(context, icon: Icons.category, index: 1),
-                const SizedBox(width: 40),
-                _buildNavItem(context, icon: Icons.tag, index: 2),
-                _buildNavItem(context, icon: Icons.person, index: 3),
-              ],
+        items: [
+          BottomNavigationBarItem(
+            icon: SvgPicture.asset(
+              AppAssets.homeIcon,
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                navigationShell.currentIndex == 0
+                    ? AppColors.primaryColor
+                    : AppColors.secondaryColor,
+                BlendMode.srcIn,
+              ),
             ),
+            label: 'Home',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.category_outlined),
+            label: 'Categories',
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryColor,
+              ),
+              alignment: Alignment.center,
+              child: Container(
+                width: 20,
+                height: 20,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.white,
+                ),
+                child: Icon(Icons.add, color: AppColors.primaryColor, size: 20),
+              ),
+            ),
+            label: '',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.tag_outlined),
+            activeIcon: Icon(Icons.tag),
+            label: 'Categories',
+          ),
+          BottomNavigationBarItem(
+            icon: SvgPicture.asset(
+              AppAssets.profileIcon,
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                navigationShell.currentIndex == 3
+                    ? AppColors.primaryColor
+                    : AppColors.secondaryColor,
+                BlendMode.srcIn,
+              ),
+            ),
+            label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required int index,
-  }) {
-    return InkWell(
-      onTap: () => _onPageTapped(context, index),
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              icon,
-              color: navigationShell.currentIndex == index
-                  ? const Color(0xFF2E9A91)
-                  : Colors.grey[600],
-            ),
-          ],
-        ),
       ),
     );
   }
