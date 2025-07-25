@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../main.dart';
-import '../styling/app_text_styles.dart'; // Import to use the global 'supabase' client
+import '../main.dart'; // Import to use the global 'supabase' client
+import '../styling/app_text_styles.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -89,13 +89,8 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         );
       }
-    }
-
-    // After the attempt, hide the loading indicator.
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

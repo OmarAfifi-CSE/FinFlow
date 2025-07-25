@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../routing/app_routes.dart';
 import '../styling/app_text_styles.dart';
-import 'signup_screen.dart';
 import '../main.dart'; // Import to use the global 'supabase' client
 
 class SigninScreen extends StatefulWidget {
@@ -67,13 +66,10 @@ class _SigninScreenState extends State<SigninScreen> {
           ),
         );
       }
+    }finally {
+      if (mounted) setState(() => _isLoading = false);
     }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   Future<void> _showForgotPasswordDialog() async {

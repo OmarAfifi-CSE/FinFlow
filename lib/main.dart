@@ -2,12 +2,9 @@ import 'package:expense_manager/routing/router_generation_config.dart';
 import 'package:expense_manager/styling/app_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'auth/auth_gate.dart';
 import 'providers/expense_provider.dart';
-import 'screens/onboarding_screen.dart';
 import 'widgets/connectivity_monitor.dart';
 
 // A global variable to easily access the Supabase client from anywhere in the app
@@ -28,17 +25,11 @@ Future<void> main() async {
     ),
   );
 
-  // Get instance of SharedPreferences for the onboarding check.
-  final prefs = await SharedPreferences.getInstance();
-  final bool onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-
-  runApp(MyApp(onboardingComplete: onboardingComplete));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool onboardingComplete;
-
-  const MyApp({super.key, required this.onboardingComplete});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +46,7 @@ class MyApp extends StatelessWidget {
             child: child!,
           );
         },
-        routerConfig: RouterGenerationConfig.goRouter,
+        routerConfig: RouterGenerationConfig.goRouter(),
       ),
     );
   }
