@@ -4,7 +4,7 @@ class Expense {
   final String categoryId;
   final String note;
   final DateTime date;
-  final String? tag;
+  final String? tagId;
 
   Expense({
     required this.id,
@@ -12,7 +12,7 @@ class Expense {
     required this.categoryId,
     required this.note,
     required this.date,
-    this.tag,
+    this.tagId,
   });
 
   // Convert a JSON object to an Expense instance
@@ -23,7 +23,7 @@ class Expense {
       categoryId: json['category_id'],
       note: json['description'],
       date: DateTime.parse(json['date']),
-      tag: json['tag_id'],
+      tagId: json['tag_id'],
     );
   }
 
@@ -35,7 +35,7 @@ class Expense {
       'category_id': categoryId,
       'description': note,
       'date': date.toIso8601String(),
-      'tag_id': tag,
+      'tag_id': tagId,
     };
   }
 }

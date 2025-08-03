@@ -88,6 +88,7 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter_18pt-Bold.ttf
+        - asset: assets/fonts/Inter_18pt-SemiBold.ttf
         - asset: assets/fonts/Inter_18pt-Medium.ttf
         - asset: assets/fonts/Inter_18pt-Regular.ttf
   #   - family: Trajan Pro

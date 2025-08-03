@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import '../models/expense.dart';
+import '../styling/app_colors.dart';
+import '../styling/app_text_styles.dart';
 import 'add_expense_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -61,52 +63,51 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildBalanceCard(ExpenseProvider provider) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        color: Color(0xFF2E9A91),
+        color: AppColors.primaryColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF38A39A),
+          color: AppColors.primaryColorShade,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Total Balance',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '\$${provider.totalBalance.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
+            Text('Total Balance', style: AppTextStyles.cardSubtitlesStyle),
+            const SizedBox(height: 5),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '\$${provider.totalBalance.toStringAsFixed(2)}',
+                style: AppTextStyles.cardPrimaryTextStyle,
               ),
             ),
             const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 16,
               children: [
-                _buildIncomeExpense(
-                  'Income',
-                  '\$${provider.totalIncome.toStringAsFixed(2)}',
-                  Icons.arrow_downward,
+                Expanded(
+                  child: _buildIncomeExpense(
+                    'Income',
+                    '\$${provider.totalIncome.toStringAsFixed(2)}',
+                    Icons.arrow_downward,
+                  ),
                 ),
-                _buildIncomeExpense(
-                  'Expenses',
-                  '\$${provider.totalExpenses.toStringAsFixed(2)}',
-                  Icons.arrow_upward,
+                Expanded(
+                  child: _buildIncomeExpense(
+                    'Expenses',
+                    '\$${provider.totalExpenses.toStringAsFixed(2)}',
+                    Icons.arrow_upward,
+                    alignRight: true,
+                  ),
                 ),
               ],
             ),
@@ -116,48 +117,53 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildIncomeExpense(String title, String value, IconData icon) {
+  Widget _buildIncomeExpense(
+    String title,
+    String value,
+    IconData icon, {
+    alignRight = false,
+  }) {
     return Row(
+      mainAxisAlignment: alignRight
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.start,
       children: [
         Icon(icon, color: Colors.white, size: 28),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 14,
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.cardSubtitlesStyle.copyWith(fontSize: 14),
               ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: AppTextStyles.cardPrimaryTextStyle.copyWith(
+                    fontSize: 20,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildTabBar() {
-    const primaryColor = Color(0xFF2E9A91);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Recent Transactions',
-            style: TextStyle(
-              fontSize: 20,
+            style: AppTextStyles.blackTextStyle.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
@@ -173,20 +179,21 @@ class _HomeScreenState extends State<HomeScreen>
               indicatorPadding: const EdgeInsets.all(5.0),
               indicator: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.0),
-                color: primaryColor,
+                color: AppColors.primaryColor,
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
+                    color: AppColors.primaryColor.withAlpha(77),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               indicatorSize: TabBarIndicatorSize.tab,
-              splashFactory: NoSplash.splashFactory,
-              overlayColor: MaterialStateProperty.all(Colors.transparent),
               labelColor: Colors.white,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+              ),
               unselectedLabelColor: Colors.black54,
               tabs: const [
                 Tab(text: "By Date"),
@@ -204,9 +211,13 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (context, provider, child) {
         if (provider.expenses.isEmpty) {
           return Center(
-            child: Text(
-              "No transactions yet. Tap '+' to add one!",
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                textAlign: TextAlign.center,
+                "No transactions yet. Tap '+' to add one!",
+                style: AppTextStyles.subtitlesStyle,
+              ),
             ),
           );
         }
@@ -227,44 +238,46 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (context, provider, child) {
         if (provider.expenses.isEmpty) {
           return Center(
-            child: Text(
-              "No transactions yet. Tap '+' to add one!",
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                textAlign: TextAlign.center,
+                "No transactions yet. Tap '+' to add one!",
+                style: AppTextStyles.subtitlesStyle,
+              ),
             ),
           );
         }
-        var grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
-        return ListView(
+        final grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
+        final List<dynamic> itemsList = [];
+        grouped.entries.forEach((entry) {
+          final categoryName = provider.getCategoryForId(entry.key).name;
+          final total = entry.value.fold(
+            0.0,
+            (prev, Expense element) => prev + element.amount,
+          );
+          itemsList.add({'name': categoryName, 'total': total});
+          itemsList.addAll(entry.value);
+        });
+
+        return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: grouped.entries.map((entry) {
-            String categoryName = provider.getCategoryForId(entry.key).name;
-            double total = entry.value.fold(
-              0.0,
-              (prev, Expense element) => prev + element.amount,
-            );
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12.0,
-                    horizontal: 8.0,
-                  ),
-                  child: Text(
-                    "$categoryName - Total: \$${total.abs().toStringAsFixed(2)}",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
+          itemCount: itemsList.length,
+          itemBuilder: (context, index) {
+            final item = itemsList[index];
+
+            if (item is Map) {
+              return Text(
+                "${item['name']} - Total: \$${(item['total'] as double).abs().toStringAsFixed(2)}",
+                style: AppTextStyles.blackTextStyle.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                ...entry.value.map(
-                  (expense) => _buildTransactionItem(context, expense),
-                ),
-              ],
-            );
-          }).toList(),
+              );
+            } else {
+              return _buildTransactionItem(context, item as Expense);
+            }
+          },
         );
       },
     );
@@ -300,18 +313,36 @@ class _HomeScreenState extends State<HomeScreen>
         margin: const EdgeInsets.symmetric(vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           leading: CircleAvatar(
             backgroundColor: theme.backgroundColor,
             child: Icon(icon, color: theme.color),
           ),
-          title: Text(categoryName),
-          subtitle: Text(formattedDate),
-          trailing: Text(
-            '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: amountColor,
-              fontSize: 16,
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(categoryName),
+          ),
+          subtitle: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(formattedDate),
+          ),
+          trailing: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width * 0.3,
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: amountColor,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
         ),
@@ -326,10 +357,10 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget _tabBar;
 
   @override
-  double get minExtent => 140;
+  double get minExtent => 135;
 
   @override
-  double get maxExtent => 150;
+  double get maxExtent => 135;
 
   @override
   Widget build(

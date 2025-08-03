@@ -67,8 +67,8 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
       )) {
         _selectedCategoryId = widget.expense!.categoryId;
       }
-      if (provider.tags.any((tag) => tag.id == widget.expense!.tag)) {
-        _selectedTagId = widget.expense!.tag;
+      if (provider.tags.any((tag) => tag.id == widget.expense!.tagId)) {
+        _selectedTagId = widget.expense!.tagId;
       }
     } else {
       _amountController = TextEditingController();
@@ -117,7 +117,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
         categoryId: _selectedCategoryId!,
         note: _noteController.text,
         date: _selectedDate,
-        tag: _selectedTagId,
+        tagId: _selectedTagId,
       );
 
       await Provider.of<ExpenseProvider>(
