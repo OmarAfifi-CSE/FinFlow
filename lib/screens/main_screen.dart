@@ -18,14 +18,6 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  void _showAddExpenseSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => const AddExpenseSheet(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
@@ -120,7 +112,11 @@ class MainScreen extends StatelessWidget {
         iconSize: 30,
         onTap: (index) {
           if (index == 2) {
-            _showAddExpenseSheet(context);
+            showModalBottomSheet(
+              context: scaffoldKey.currentContext!,
+              isScrollControlled: true,
+              builder: (context) => const AddExpenseSheet(),
+            );
           } else {
             _onPageTapped(context, index < 2 ? index : index - 1);
           }

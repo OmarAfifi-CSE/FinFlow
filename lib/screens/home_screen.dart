@@ -250,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen>
         }
         final grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
         final List<dynamic> itemsList = [];
-        grouped.entries.forEach((entry) {
+        for (var entry in grouped.entries) {
           final categoryName = provider.getCategoryForId(entry.key).name;
           final total = entry.value.fold(
             0.0,
@@ -258,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen>
           );
           itemsList.add({'name': categoryName, 'total': total});
           itemsList.addAll(entry.value);
-        });
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -267,11 +267,27 @@ class _HomeScreenState extends State<HomeScreen>
             final item = itemsList[index];
 
             if (item is Map) {
-              return Text(
-                "${item['name']} - Total: \$${(item['total'] as double).abs().toStringAsFixed(2)}",
-                style: AppTextStyles.blackTextStyle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              final CategoryTheme theme =
+                  categoryThemes[item['name']] ??
+                  defaultCategoryThemes[item['name'].hashCode %
+                      defaultCategoryThemes.length];
+              return RichText(
+                text: TextSpan(
+                  text: toTitleCase(item['name']),
+                  style: AppTextStyles.blackTextStyle.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: theme.color,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: ' - Total: \$${item['total'].toStringAsFixed(2)}',
+                      style: AppTextStyles.blackTextStyle.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               );
             } else {
@@ -299,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen>
     return InkWell(
       onTap: () {
         showModalBottomSheet(
-          context: context,
+          context: Scaffold.of(context).context,
           isScrollControlled: true,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -321,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen>
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(categoryName),
+            child: Text(categoryName, style: TextStyle(color: theme.color)),
           ),
           subtitle: FittedBox(
             fit: BoxFit.scaleDown,

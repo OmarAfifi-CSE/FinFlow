@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/expense.dart';
-import '../models/expense_category.dart';
-import '../models/tag.dart';
 import '../providers/expense_provider.dart';
+import '../styling/app_colors.dart';
+import '../styling/app_text_styles.dart';
 import '../utils/app_constants.dart';
 
 const uuid = Uuid();
@@ -14,7 +14,7 @@ const uuid = Uuid();
 class AddExpenseSheet extends StatefulWidget {
   final Expense? expense;
 
-  const AddExpenseSheet({Key? key, this.expense}) : super(key: key);
+  const AddExpenseSheet({super.key, this.expense});
 
   @override
   _AddExpenseSheetState createState() => _AddExpenseSheetState();
@@ -174,113 +174,116 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              margin: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.4,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: 16,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.4,
+                ),
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              Text(
+                widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.blackTextStyle.copyWith(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            buildTransactionTypeToggle(),
-            const SizedBox(height: 16),
-            buildTextField(
-              _amountController,
-              'Amount',
-              const TextInputType.numberWithOptions(decimal: true),
-            ),
-            buildTextField(
-              _noteController,
-              'Note (Optional)',
-              TextInputType.text,
-            ),
-            buildDateField(context, _selectedDate),
-            const SizedBox(height: 8),
-            buildCategoryDropdown(context),
-            const SizedBox(height: 16),
-            buildTagDropdown(context),
-            const SizedBox(height: 16),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(
-                    color: Colors.red[700],
-                    fontWeight: FontWeight.bold,
+              const SizedBox(height: 24),
+              buildTransactionTypeToggle(),
+              const SizedBox(height: 16),
+              buildTextField(
+                _amountController,
+                'Amount',
+                const TextInputType.numberWithOptions(decimal: true),
+              ),
+              buildTextField(
+                _noteController,
+                'Note (Optional)',
+                TextInputType.text,
+              ),
+              buildDateField(context, _selectedDate),
+              const SizedBox(height: 8),
+              buildCategoryDropdown(context),
+              const SizedBox(height: 16),
+              buildTagDropdown(context),
+              const SizedBox(height: 16),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(
+                      color: Colors.red[700],
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            if (_isSaving)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E9A91),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              if (_isSaving)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E9A91),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      onPressed: _saveTransaction,
-                      child: const Text(
-                        'Save Transaction',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        onPressed: _saveTransaction,
+                        child: const Text(
+                          'Save Transaction',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (widget.expense != null) ...[
-                    const SizedBox(width: 16),
-                    IconButton(
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.red[50],
-                        foregroundColor: Colors.red[700],
-                        padding: const EdgeInsets.all(12),
+                    if (widget.expense != null) ...[
+                      const SizedBox(width: 16),
+                      IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.red[50],
+                          foregroundColor: Colors.red[700],
+                          padding: const EdgeInsets.all(12),
+                        ),
+                        onPressed: _deleteTransaction,
+                        icon: const Icon(Icons.delete_forever),
+                        tooltip: 'Delete Transaction',
                       ),
-                      onPressed: _deleteTransaction,
-                      icon: const Icon(Icons.delete_forever),
-                      tooltip: 'Delete Transaction',
-                    ),
+                    ],
                   ],
-                ],
-              ),
-          ],
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -304,7 +307,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
           color: indicatorColor,
           boxShadow: [
             BoxShadow(
-              color: indicatorColor.withOpacity(0.3),
+              color: indicatorColor.withAlpha(77),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -312,7 +315,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         splashFactory: NoSplash.splashFactory,
-        overlayColor: MaterialStateProperty.all(Colors.transparent),
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
         labelColor: Colors.white,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelColor: Colors.black54,
@@ -357,7 +360,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
           final DateTime? picked = await showDatePicker(
             context: context,
             initialDate: selectedDate,
-            firstDate: DateTime(2000),
+            firstDate: DateTime(1950),
             lastDate: DateTime(2100),
           );
           if (picked != null && picked != selectedDate) {
@@ -452,6 +455,8 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     return Consumer<ExpenseProvider>(
       builder: (context, consumerProvider, child) {
         return DropdownButtonFormField<String>(
+          menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
+          borderRadius: BorderRadius.circular(12),
           value: _selectedCategoryId,
           onChanged: (newValue) {
             if (newValue == 'New') {
@@ -473,16 +478,40 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               consumerProvider.categories.map<DropdownMenuItem<String>>((
                 category,
               ) {
+                final formattedName = toTitleCase(category.name);
+                final IconData icon =
+                    categoryIcons[formattedName] ?? Icons.category;
+                final CategoryTheme theme =
+                    categoryThemes[formattedName] ??
+                    defaultCategoryThemes[category.name.hashCode %
+                        defaultCategoryThemes.length];
+
                 return DropdownMenuItem<String>(
                   value: category.id,
-                  child: Text(category.name),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: theme.backgroundColor,
+                        child: Icon(icon, color: theme.color, size: 16),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(category.name, style: TextStyle(color: theme.color)),
+                    ],
+                  ),
                 );
               }).toList()..add(
                 const DropdownMenuItem(
                   value: "New",
-                  child: Text(
-                    "＋ Add New Category",
-                    style: TextStyle(color: Color(0xFF2E9A91)),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, color: Color(0xFF2E9A91)),
+                      SizedBox(width: 12),
+                      Text(
+                        "Add New Category",
+                        style: TextStyle(color: Color(0xFF2E9A91)),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -500,6 +529,8 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
     return Consumer<ExpenseProvider>(
       builder: (context, consumerProvider, child) {
         return DropdownButtonFormField<String?>(
+          menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
+          borderRadius: BorderRadius.circular(12),
           value: _selectedTagId,
           onChanged: (newValue) {
             if (newValue == 'New') {
@@ -521,14 +552,26 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               consumerProvider.tags.map<DropdownMenuItem<String?>>((tag) {
                 return DropdownMenuItem<String?>(
                   value: tag.id,
-                  child: Text(tag.name),
+                  child: Row(
+                    children: [
+                      Icon(Icons.tag, color: AppColors.primaryColor, size: 20),
+                      const SizedBox(width: 12),
+                      Text(tag.name),
+                    ],
+                  ),
                 );
               }).toList()..add(
                 const DropdownMenuItem(
                   value: "New",
-                  child: Text(
-                    "＋ Add New Tag",
-                    style: TextStyle(color: Color(0xFF2E9A91)),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, color: Color(0xFF2E9A91)),
+                      SizedBox(width: 12),
+                      Text(
+                        "Add New Tag",
+                        style: TextStyle(color: Color(0xFF2E9A91)),
+                      ),
+                    ],
                   ),
                 ),
               ),
