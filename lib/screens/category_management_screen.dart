@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/expense_category.dart';
 import '../providers/expense_provider.dart';
+import '../styling/app_colors.dart';
 import '../utils/app_constants.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
@@ -16,7 +17,6 @@ class CategoryManagementScreen extends StatefulWidget {
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF2E9A91);
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
     return Scaffold(
@@ -108,7 +108,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCategoryDialog(context, provider),
         tooltip: 'Add New Category',
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primaryColor,
         child: const Icon(Icons.add),
       ),
     );

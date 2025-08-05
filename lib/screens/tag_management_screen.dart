@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/tag.dart';
 import '../providers/expense_provider.dart';
+import '../styling/app_colors.dart';
 import '../utils/app_constants.dart';
 
 class TagManagementScreen extends StatelessWidget {
@@ -9,7 +10,6 @@ class TagManagementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF2E9A91);
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
     return Scaffold(
@@ -60,11 +60,11 @@ class TagManagementScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: primaryColor.withAlpha(30),
+                      backgroundColor: AppColors.primaryColor.withAlpha(30),
                       child: const Icon(
                         Icons.tag,
                         size: 20,
-                        color: primaryColor,
+                        color: AppColors.primaryColor,
                       ),
                     ),
                     title: Text(
@@ -92,7 +92,7 @@ class TagManagementScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTagDialog(context, provider),
         tooltip: 'Add New Tag',
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primaryColor,
         child: const Icon(Icons.add),
       ),
     );
@@ -153,9 +153,7 @@ class TagManagementScreen extends StatelessWidget {
                 children: [
                   TextField(
                     controller: tagNameController,
-                    decoration: const InputDecoration(
-                      hintText: "e.g., 'Work'",
-                    ),
+                    decoration: const InputDecoration(hintText: "e.g., 'Work'"),
                     autofocus: true,
                     textCapitalization: TextCapitalization.words,
                   ),
