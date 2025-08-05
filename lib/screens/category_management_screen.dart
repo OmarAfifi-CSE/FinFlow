@@ -24,7 +24,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       body: Consumer<ExpenseProvider>(
         builder: (context, consumerProvider, child) {
           final allCategories = consumerProvider.categories;
-
           if (allCategories.isEmpty) {
             return Center(
               child: Text(
@@ -34,26 +33,20 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               ),
             );
           }
-
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
             itemCount: allCategories.length,
             itemBuilder: (context, index) {
               final category = allCategories[index];
-              final bool canDelete = category.isDefault != true;
-
               final formattedName = toTitleCase(category.name);
               final icon = categoryIcons[formattedName] ?? Icons.category;
               final theme =
                   categoryThemes[formattedName] ??
                   defaultCategoryThemes[category.name.hashCode %
                       defaultCategoryThemes.length];
-
               return Dismissible(
                 key: Key(category.id),
-                direction: canDelete
-                    ? DismissDirection.endToStart
-                    : DismissDirection.none,
+                direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red[700],
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -84,8 +77,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       category.name,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    trailing: canDelete
-                        ? IconButton(
+                    trailing:IconButton(
                             icon: Icon(
                               Icons.delete_outline,
                               color: Colors.red[700],
@@ -105,8 +97,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                 );
                               }
                             },
-                          )
-                        : null,
+                          ),
                   ),
                 ),
               );
@@ -124,17 +115,25 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   }
 
   Future<void> _deleteCategoryAndShowSnackBar(
-    BuildContext context,
-    ExpenseProvider provider,
-    ExpenseCategory category,
-  ) async {
-    await provider.deleteCategory(category.id);
-    if (mounted) {
+      BuildContext context,
+      ExpenseProvider provider,
+      ExpenseCategory category,
+      ) async {
+    final deletedData = await provider.deleteCategory(category.id);
+    if (mounted && deletedData != null) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          duration: const Duration(seconds: 2),
-          content: Text('"${category.name}" deleted.'),
+          duration: const Duration(seconds: 4),
+          content: Text('"${deletedData.category.name}" deleted.'),
           backgroundColor: Colors.black87,
+          action: SnackBarAction(
+            label: 'UNDO',
+            textColor: Colors.yellow,
+            onPressed: () {
+              provider.undoDeleteCategory(deletedData);
+            },
+          ),
         ),
       );
     }
@@ -144,23 +143,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     BuildContext context,
     ExpenseCategory category,
   ) {
-    if (category.isDefault == true) {
-      return showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Cannot Delete'),
-          content: const Text(
-            'This is a default category and cannot be deleted.',
-          ),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(ctx).pop(false),
-            ),
-          ],
-        ),
-      );
-    }
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

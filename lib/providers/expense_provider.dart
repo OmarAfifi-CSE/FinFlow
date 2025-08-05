@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -5,7 +6,8 @@ import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../models/expense_category.dart';
 import '../models/tag.dart';
-import '../main.dart'; // To get the global 'supabase' client
+import '../main.dart';
+import 'deleted_category_data.dart'; // To get the global 'supabase' client
 
 const uuid = Uuid();
 
@@ -130,7 +132,6 @@ class ExpenseProvider with ChangeNotifier {
     final newCategory = ExpenseCategory(
       id: uuid.v4(),
       name: name,
-      isDefault: isDefault,
     );
 
     final categoryMap = newCategory.toJson();
@@ -156,7 +157,12 @@ class ExpenseProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteCategory(String id) async {
+  Future<DeletedCategoryData?> deleteCategory(String id) async {
+    final categoryToDelete = _categories.firstWhereOrNull((cat) => cat.id == id);
+    if (categoryToDelete == null) {
+      return null;
+    }
+    final relatedExpenses = _expenses.where((exp) => exp.categoryId == id).toList();
     _categories.removeWhere((category) => category.id == id);
     _expenses.removeWhere((expense) => expense.categoryId == id);
     notifyListeners();
@@ -166,6 +172,22 @@ class ExpenseProvider with ChangeNotifier {
       debugPrint("Error deleting category, re-fetching to sync state: $e");
       await fetchInitialData();
     }
+    return DeletedCategoryData(categoryToDelete, relatedExpenses);
+  }
+  Future<void> undoDeleteCategory(DeletedCategoryData deletedData) async {
+    final categoryMap = deletedData.category.toJson();
+    categoryMap['user_id'] = supabase.auth.currentUser!.id;
+    await supabase.from('categories').upsert(categoryMap);
+    if (deletedData.relatedExpenses.isNotEmpty) {
+      final expenseMaps = deletedData.relatedExpenses.map((e) {
+        final map = e.toJson();
+        map['user_id'] = supabase.auth.currentUser!.id;
+        return map;
+      }).toList();
+      await supabase.from('expenses').upsert(expenseMaps);
+    }
+    _isDataLoaded = false;
+    await fetchInitialData();
   }
 
   Future<Tag?> addTag(String name) async {
@@ -216,29 +238,29 @@ class ExpenseProvider with ChangeNotifier {
     return categories.firstWhere(
           (cat) => cat.id == categoryId,
       orElse: () =>
-          ExpenseCategory(id: 'unknown', name: 'Unknown', isDefault: false),
+          ExpenseCategory(id: 'unknown', name: 'Unknown'),
     );
   }
 
   Future<void> _addDefaultCategories(String userId) async {
     final List<Map<String, dynamic>> defaultCategories = [
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Food', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Transport', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Shopping', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Groceries', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Bills', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Entertainment', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Health', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Travel', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Education', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Gifts', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Family', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pets', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Home', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Investments', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Business', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Salary', 'is_default': true},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Savings', 'is_default': true},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Food'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Transport'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Shopping'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Groceries'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Bills'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Entertainment'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Health'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Travel'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Education', },
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Gifts'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Family'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pets'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Home'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Investments'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Business'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Salary'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Savings'},
     ];
     await supabase.from('categories').insert(defaultCategories);
     await fetchInitialData();

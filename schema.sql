@@ -12,7 +12,6 @@ CREATE TABLE public.categories (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   name text NOT NULL,
-  is_default boolean NULL DEFAULT false,
   created_at timestamp with time zone NULL DEFAULT now(),
   CONSTRAINT categories_pkey PRIMARY KEY (id),
   -- If a user is deleted, all their categories are deleted too.
