@@ -1,9 +1,10 @@
+import 'package:expense_manager/widgets/custom_primary_button.dart';
+import 'package:expense_manager/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 
-import '../componants/my_textfield.dart';
-import '../componants/wave_clipper.dart';
-import '../componants/my_button.dart';
+import '../styling/app_colors.dart';
+import '../widgets/wave_clipper.dart';
 import '../main.dart'; // Import for the global supabase client
 
 class ProfileScreen extends StatefulWidget {
@@ -25,13 +26,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Fetches user data from Supabase and updates the state.
   void _loadUserData() {
-    // A post-frame callback ensures that the context is available
-    // and that we're not trying to update state during a build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = supabase.auth.currentUser;
       if (user != null && mounted) {
         setState(() {
-          // The username is stored in the user_metadata field.
           _username = user.userMetadata?['username'] ?? 'No username set';
           _email = user.email ?? 'No email found';
         });
@@ -39,120 +37,128 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-    String? errorMessage;
-    bool isUpdating = false;
+  Future<void> _showChangePasswordDialog() async {
+    final TextEditingController forgotEmailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isDialogLoading = false;
 
-    showDialog(
+    return showDialog<void>(
       context: context,
-      builder: (dialogContext) {
+      // Use a StatefulBuilder to manage the dialog's loading state
+      builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Change Password"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MyTextfield(
-                    controller: newPasswordController,
-                    hintText: "New Password",
-                    obscureText: true,
-                    valMessage: "Enter a new password",
-                  ),
-                  const SizedBox(height: 15),
-                  MyTextfield(
-                    controller: confirmPasswordController,
-                    hintText: "Confirm New Password",
-                    obscureText: true,
-                    valMessage: "Confirm your new password",
-                  ),
-                  if (errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 15.0),
-                      child: Text(
-                        errorMessage!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+              title: const Text('Reset Password'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (isDialogLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else ...[
+                      const Text(
+                        'Enter the email address associated with your account'
+                        ' to receive a password reset link.',
                       ),
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text("Cancel"),
+                      const SizedBox(height: 20),
+                      CustomTextFormField(
+                        controller: forgotEmailController,
+                        hintText: 'Your Email',
+                        obscureText: false,
+                        valMessage: 'Please enter your email',
+                      ),
+                    ],
+                  ],
                 ),
-                if (isUpdating)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: CircularProgressIndicator(),
-                  )
-                else
-                  TextButton(
-                    onPressed: () async {
-                      // --- 2. PASSWORD UPDATE LOGIC ---
-                      final newPassword = newPasswordController.text.trim();
-                      final confirmPassword = confirmPasswordController.text
-                          .trim();
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: isDialogLoading
+                      ? null
+                      : () {
+                          context.pop();
+                        },
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isDialogLoading
+                      ? null
+                      : () async {
+                          if (formKey.currentState!.validate()) {
+                            setDialogState(() {
+                              isDialogLoading = true;
+                            });
 
-                      // --- Validation ---
-                      if (newPassword.isEmpty || confirmPassword.isEmpty) {
-                        setDialogState(
-                          () => errorMessage = "Fields cannot be empty.",
-                        );
-                        return;
-                      }
-                      if (newPassword.length < 6) {
-                        setDialogState(
-                          () => errorMessage =
-                              "Password must be at least 6 characters.",
-                        );
-                        return;
-                      }
-                      if (newPassword != confirmPassword) {
-                        setDialogState(
-                          () => errorMessage = "Passwords do not match.",
-                        );
-                        return;
-                      }
+                            try {
+                              final email = forgotEmailController.text.trim();
 
-                      setDialogState(() {
-                        isUpdating = true;
-                        errorMessage = null;
-                      });
+                              // Step 1: Call the database function to check if the user exists
+                              final bool userExists = await supabase.rpc(
+                                'check_user_exists',
+                                params: {'user_email': email},
+                              );
 
-                      try {
-                        // --- Supabase Call ---
-                        await supabase.auth.updateUser(
-                          UserAttributes(password: newPassword),
-                        );
-
-                        if (mounted) {
-                          Navigator.of(dialogContext).pop(); // Close dialog
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Password updated successfully!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      } on AuthException catch (e) {
-                        setDialogState(() {
-                          isUpdating = false;
-                          errorMessage = e.message;
-                        });
-                      } catch (e) {
-                        setDialogState(() {
-                          isUpdating = false;
-                          errorMessage = "An unexpected error occurred.";
-                        });
-                      }
-                    },
-                    child: const Text("Update"),
-                  ),
+                              if (mounted) {
+                                // Check if widget is still in the tree
+                                if (userExists) {
+                                  // Step 2: If user exists, send the reset email
+                                  await supabase.auth.resetPasswordForEmail(
+                                    email,
+                                    redirectTo:
+                                        'https://omarafifi-cse.github.io/FinFlow/reset-password.html',
+                                  );
+                                  if (context.mounted) {
+                                    context.pop(); // Close the dialog
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Password reset link sent! Please check your email.',
+                                        ),
+                                        backgroundColor: Colors.green[600],
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  // Step 3: If user does not exist, show an error
+                                  if (context.mounted) {
+                                    context.pop(); // Close the dialog
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                          'No account found with that email address.',
+                                        ),
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                context.pop(); // Close the dialog
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'An unexpected error occurred. Please try again.',
+                                    ),
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.error,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                  child: const Text('Send Link'),
+                ),
               ],
             );
           },
@@ -174,17 +180,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: 450,
-              decoration: const BoxDecoration(color: Colors.teal),
+              decoration: const BoxDecoration(color: AppColors.primaryColor),
             ),
           ),
           SingleChildScrollView(
             child: Center(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(top: 60, bottom: 20),
                     child: Text(
                       "Profile",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -196,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.all(0),
                     child: CircleAvatar(
                       radius: 80,
-                      backgroundColor: Colors.teal[200],
+                      backgroundColor: Colors.teal[300],
                       child: const Icon(
                         Icons.person,
                         size: 140,
@@ -207,6 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 15),
                   Text(
                     _username,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -215,6 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     _email,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
@@ -222,32 +232,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(15, 40, 15, 10),
-                    child: MyButton(
-                      button_msg: "Change Password",
-                      button_icon: const Icon(Icons.lock_outline),
-                      onPressed: () async {
-                        _showChangePasswordDialog(context);
-                      },
-                      bgColor: Colors.teal,
-                      fgColor: Colors.white,
-                      padding: MediaQuery.of(context).size.width < 500? 10:15,
-                      borderRadius: 15,
+                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 10),
+                    child: CustomPrimaryButton(
+                      buttonText: 'Change Password',
+                      icon: Icons.lock,
+                      onPressed: _showChangePasswordDialog,
+                      borderRadius: 12,
                     ),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 40),
-                    child: MyButton(
-                      button_msg: "Log Out",
-                      button_icon: const Icon(Icons.logout),
+                    child: CustomPrimaryButton(
+                      buttonText: 'Log Out',
+                      textColor: Colors.red[700],
+                      icon: Icons.logout,
                       onPressed: () async {
                         await supabase.auth.signOut();
                       },
-                      bgColor: Colors.red[50]!,
-                      fgColor: Colors.red[700]!,
-                      padding: MediaQuery.of(context).size.width < 500? 10:15,
-                      borderRadius: 15,
+                      borderRadius: 12,
+                      buttonColor: Colors.red[50]!,
                     ),
                   ),
                 ],

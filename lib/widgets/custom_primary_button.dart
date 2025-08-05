@@ -5,6 +5,8 @@ import '../styling/app_text_styles.dart';
 class CustomPrimaryButton extends StatelessWidget {
   final String? buttonText;
   final Color? buttonColor;
+  final Color? textColor;
+  final IconData? icon;
   final double? width;
   final double? height;
   final double? borderRadius;
@@ -17,6 +19,8 @@ class CustomPrimaryButton extends StatelessWidget {
     super.key,
     required this.buttonText,
     this.buttonColor,
+    this.textColor,
+    this.icon,
     this.width,
     this.height,
     this.borderRadius,
@@ -32,7 +36,7 @@ class CustomPrimaryButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: buttonColor ?? AppColors.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: textColor ?? Colors.white,
         padding: EdgeInsets.symmetric(vertical: verticalPadding ?? 15),
         elevation: elevation ?? 0,
         shape: RoundedRectangleBorder(
@@ -47,7 +51,18 @@ class CustomPrimaryButton extends StatelessWidget {
           ? CircularProgressIndicator(
               color: Theme.of(context).colorScheme.onPrimary,
             )
-          : Text(buttonText ?? ""),
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: textColor ?? Colors.white,
+                size: 22,
+              ),
+              SizedBox(width: 8),
+              Text(buttonText ?? ""),
+            ],
+          ),
     );
   }
 }
