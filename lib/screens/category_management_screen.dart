@@ -33,75 +33,78 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               ),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: allCategories.length,
-            itemBuilder: (context, index) {
-              final category = allCategories[index];
-              final formattedName = toTitleCase(category.name);
-              final icon = categoryIcons[formattedName] ?? Icons.category;
-              final theme =
-                  categoryThemes[formattedName] ??
-                  defaultCategoryThemes[category.name.hashCode %
-                      defaultCategoryThemes.length];
-              return Dismissible(
-                key: Key(category.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  color: Colors.red[700],
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  alignment: Alignment.centerRight,
-                  child: const Icon(Icons.delete_forever, color: Colors.white),
-                ),
-                confirmDismiss: (direction) async {
-                  return await _showDeleteConfirmationDialog(context, category);
-                },
-                onDismissed: (direction) {
-                  _deleteCategoryAndShowSnackBar(context, provider, category);
-                },
-                child: Card(
-                  elevation: 1,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
+          return RefreshIndicator(
+            onRefresh: () => consumerProvider.forceRefreshData(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: allCategories.length,
+              itemBuilder: (context, index) {
+                final category = allCategories[index];
+                final formattedName = toTitleCase(category.name);
+                final icon = categoryIcons[formattedName] ?? Icons.category;
+                final theme =
+                    categoryThemes[formattedName] ??
+                    defaultCategoryThemes[category.name.hashCode %
+                        defaultCategoryThemes.length];
+                return Dismissible(
+                  key: Key(category.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.red[700],
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    alignment: Alignment.centerRight,
+                    child: const Icon(Icons.delete_forever, color: Colors.white),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: theme.backgroundColor,
-                      child: Icon(icon, size: 20, color: theme.color),
+                  confirmDismiss: (direction) async {
+                    return await _showDeleteConfirmationDialog(context, category);
+                  },
+                  onDismissed: (direction) {
+                    _deleteCategoryAndShowSnackBar(context, provider, category);
+                  },
+                  child: Card(
+                    elevation: 1,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
                     ),
-                    title: Text(
-                      category.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    trailing:IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: Colors.red[700],
-                            ),
-                            tooltip: 'Delete Category',
-                            onPressed: () async {
-                              final bool? shouldDelete =
-                                  await _showDeleteConfirmationDialog(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: theme.backgroundColor,
+                        child: Icon(icon, size: 20, color: theme.color),
+                      ),
+                      title: Text(
+                        category.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing:IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: Colors.red[700],
+                              ),
+                              tooltip: 'Delete Category',
+                              onPressed: () async {
+                                final bool? shouldDelete =
+                                    await _showDeleteConfirmationDialog(
+                                      context,
+                                      category,
+                                    );
+                                if (shouldDelete == true) {
+                                  _deleteCategoryAndShowSnackBar(
                                     context,
+                                    provider,
                                     category,
                                   );
-                              if (shouldDelete == true) {
-                                _deleteCategoryAndShowSnackBar(
-                                  context,
-                                  provider,
-                                  category,
-                                );
-                              }
-                            },
-                          ),
+                                }
+                              },
+                            ),
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

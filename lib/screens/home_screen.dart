@@ -207,95 +207,149 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildExpensesByDate(BuildContext context) {
-    return Consumer<ExpenseProvider>(
-      builder: (context, provider, child) {
-        if (provider.expenses.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                textAlign: TextAlign.center,
-                "No transactions yet. Tap '+' to add one!",
-                style: AppTextStyles.subtitlesStyle,
+    return RefreshIndicator(
+      onRefresh: () => Provider.of<ExpenseProvider>(
+        context,
+        listen: false,
+      ).forceRefreshData(),
+      child: Consumer<ExpenseProvider>(
+        builder: (context, provider, child) {
+          if (provider.expenses.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  textAlign: TextAlign.center,
+                  "No transactions yet. Tap '+' to add one!",
+                  style: AppTextStyles.subtitlesStyle,
+                ),
               ),
-            ),
+            );
+          }
+          final sortedExpenses = provider.expenses
+            ..sort((a, b) => b.date.compareTo(a.date));
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: sortedExpenses.length,
+            itemBuilder: (context, index) =>
+                _buildTransactionItem(context, sortedExpenses[index]),
           );
-        }
-        final sortedExpenses = provider.expenses
-          ..sort((a, b) => b.date.compareTo(a.date));
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: sortedExpenses.length,
-          itemBuilder: (context, index) =>
-              _buildTransactionItem(context, sortedExpenses[index]),
-        );
-      },
+        },
+      ),
     );
   }
 
   Widget _buildExpensesByCategory(BuildContext context) {
-    return Consumer<ExpenseProvider>(
-      builder: (context, provider, child) {
-        if (provider.expenses.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                textAlign: TextAlign.center,
-                "No transactions yet. Tap '+' to add one!",
-                style: AppTextStyles.subtitlesStyle,
-              ),
-            ),
-          );
-        }
-        final grouped = groupBy(provider.expenses, (Expense e) => e.categoryId);
-        final List<dynamic> itemsList = [];
-        for (var entry in grouped.entries) {
-          final categoryName = provider.getCategoryForId(entry.key).name;
-          final total = entry.value.fold(
-            0.0,
-            (prev, Expense element) => prev + element.amount,
-          );
-          itemsList.add({'name': categoryName, 'total': total});
-          itemsList.addAll(entry.value);
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: itemsList.length,
-          itemBuilder: (context, index) {
-            final item = itemsList[index];
-
-            if (item is Map) {
-              final CategoryTheme theme =
-                  categoryThemes[item['name']] ??
-                  defaultCategoryThemes[item['name'].hashCode %
-                      defaultCategoryThemes.length];
-              return RichText(
-                text: TextSpan(
-                  text: toTitleCase(item['name']),
-                  style: AppTextStyles.blackTextStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: theme.color,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: ' - Total: \$${item['total'].toStringAsFixed(2)}',
-                      style: AppTextStyles.blackTextStyle.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+    return RefreshIndicator(
+      onRefresh: () => Provider.of<ExpenseProvider>(
+        context,
+        listen: false,
+      ).forceRefreshData(),
+      child: Consumer<ExpenseProvider>(
+        builder: (context, provider, child) {
+          if (provider.expenses.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  textAlign: TextAlign.center,
+                  "No transactions yet. Tap '+' to add one!",
+                  style: AppTextStyles.subtitlesStyle,
                 ),
-              );
-            } else {
-              return _buildTransactionItem(context, item as Expense);
+              ),
+            );
+          }
+          final sortedExpenses = List<Expense>.from(provider.expenses)
+            ..sort((a, b) => b.date.compareTo(a.date));
+          final grouped = groupBy(sortedExpenses, (Expense e) => e.categoryId);
+
+          final double grandTotalIncome = provider.totalIncome;
+          final double grandTotalExpenses = provider.totalExpenses;
+
+          final List<dynamic> itemsList = [];
+          for (var entry in grouped.entries) {
+            final categoryName = provider.getCategoryForId(entry.key).name;
+            final total = entry.value.fold(
+              0.0,
+              (prev, Expense element) => prev + element.amount,
+            );
+
+            double percentage = 0.0;
+            String percentageLabel = '';
+
+            if (total > 0) {
+              final double categoryIncomeTotal = entry.value
+                  .where((e) => e.amount > 0)
+                  .fold(0.0, (sum, e) => sum + e.amount);
+
+              if (grandTotalIncome > 0) {
+                percentage = (categoryIncomeTotal / grandTotalIncome) * 100;
+                percentageLabel = ' of income';
+              }
+            } else if (total < 0) {
+              final double categoryExpenseTotal = entry.value
+                  .where((e) => e.amount < 0)
+                  .fold(0.0, (sum, e) => sum + e.amount.abs());
+
+              if (grandTotalExpenses > 0) {
+                percentage = (categoryExpenseTotal / grandTotalExpenses) * 100;
+                percentageLabel = ' of expenses';
+              }
             }
-          },
-        );
-      },
+
+            itemsList.add({
+              'name': categoryName,
+              'total': total,
+              'percentage': percentage,
+              'percentageLabel': percentageLabel,
+            });
+            itemsList.addAll(entry.value);
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: itemsList.length,
+            itemBuilder: (context, index) {
+              final item = itemsList[index];
+
+              if (item is Map) {
+                final CategoryTheme theme =
+                    categoryThemes[item['name']] ??
+                    defaultCategoryThemes[item['name'].hashCode %
+                        defaultCategoryThemes.length];
+                return RichText(
+                  text: TextSpan(
+                    text: toTitleCase(item['name']),
+                    style: AppTextStyles.blackTextStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: theme.color,
+                    ),
+                    children: [
+                      if (item['percentage'] > 0)
+                        TextSpan(
+                          text: ' (${item['percentage'].toStringAsFixed(1)}%${item['percentageLabel']})',
+                          style: AppTextStyles.subtitlesStyle.copyWith(
+                            color: theme.color,
+                          ),
+                        ),
+                      TextSpan(
+                        text: '${MediaQuery.sizeOf(context).width < 600? '\n':' - '}Total: \$${item['total'].toStringAsFixed(2)}',
+                        style: AppTextStyles.blackTextStyle.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return _buildTransactionItem(context, item as Expense);
+              }
+            },
+          );
+        },
+      ),
     );
   }
 

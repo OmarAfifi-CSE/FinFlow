@@ -28,64 +28,67 @@ class TagManagementScreen extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: allTags.length,
-            itemBuilder: (context, index) {
-              final tag = allTags[index];
+          return RefreshIndicator(
+            onRefresh: () => consumerProvider.forceRefreshData(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: allTags.length,
+              itemBuilder: (context, index) {
+                final tag = allTags[index];
 
-              return Dismissible(
-                key: Key(tag.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  color: Colors.red[700],
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  alignment: Alignment.centerRight,
-                  child: const Icon(Icons.delete_forever, color: Colors.white),
-                ),
-                confirmDismiss: (direction) async {
-                  return await _showDeleteConfirmationDialog(context, tag);
-                },
-                onDismissed: (direction) {
-                  _deleteTagAndShowSnackBar(context, provider, tag);
-                },
-                child: Card(
-                  elevation: 1,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
+                return Dismissible(
+                  key: Key(tag.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.red[700],
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    alignment: Alignment.centerRight,
+                    child: const Icon(Icons.delete_forever, color: Colors.white),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.primaryColor.withAlpha(30),
-                      child: const Icon(
-                        Icons.tag,
-                        size: 20,
-                        color: AppColors.primaryColor,
+                  confirmDismiss: (direction) async {
+                    return await _showDeleteConfirmationDialog(context, tag);
+                  },
+                  onDismissed: (direction) {
+                    _deleteTagAndShowSnackBar(context, provider, tag);
+                  },
+                  child: Card(
+                    elevation: 1,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.primaryColor.withAlpha(30),
+                        child: const Icon(
+                          Icons.tag,
+                          size: 20,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                      title: Text(
+                        tag.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.red[700]),
+                        tooltip: 'Delete Tag',
+                        onPressed: () async {
+                          final bool? shouldDelete =
+                              await _showDeleteConfirmationDialog(context, tag);
+                          if (shouldDelete == true && context.mounted) {
+                            _deleteTagAndShowSnackBar(context, provider, tag);
+                          }
+                        },
                       ),
                     ),
-                    title: Text(
-                      tag.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete_outline, color: Colors.red[700]),
-                      tooltip: 'Delete Tag',
-                      onPressed: () async {
-                        final bool? shouldDelete =
-                            await _showDeleteConfirmationDialog(context, tag);
-                        if (shouldDelete == true && context.mounted) {
-                          _deleteTagAndShowSnackBar(context, provider, tag);
-                        }
-                      },
-                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

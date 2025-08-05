@@ -77,6 +77,11 @@ class ExpenseProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> forceRefreshData() async {
+    _isDataLoaded = false;
+    await fetchInitialData();
+  }
+
 
   // --- CRUD Operations ---
 
