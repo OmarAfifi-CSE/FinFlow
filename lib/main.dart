@@ -1,3 +1,4 @@
+import 'package:expense_manager/providers/theme_provider.dart';
 import 'package:expense_manager/routing/router_generation_config.dart';
 import 'package:expense_manager/styling/app_themes.dart';
 import 'package:flutter/material.dart';
@@ -33,20 +34,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ExpenseProvider(),
-      child: MaterialApp.router(
-        title: 'FinFlow',
-        debugShowCheckedModeBanner: false,
-        theme: AppThemes.lightTheme,
-        // The builder property ensures that ConnectivityMonitor has access to the context provided by MaterialApp, including ScaffoldMessenger.
-        builder: (context, child) {
-          return ConnectivityMonitor(
-            // The 'child' here is the entire navigation stack of the app.
-            child: child!,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp.router(
+            title: 'FinFlow',
+            debugShowCheckedModeBanner: false,
+            theme: AppThemes.lightTheme,
+            darkTheme: AppThemes.darkTheme,
+            themeMode: themeProvider.themeMode,
+            // The builder property ensures that ConnectivityMonitor has access to the context provided by MaterialApp, including ScaffoldMessenger.
+            builder: (context, child) {
+              return ConnectivityMonitor(
+                // The 'child' here is the entire navigation stack of the app.
+                child: child!,
+              );
+            },
+            routerConfig: RouterGenerationConfig.goRouter(),
           );
         },
-        routerConfig: RouterGenerationConfig.goRouter(),
       ),
     );
   }

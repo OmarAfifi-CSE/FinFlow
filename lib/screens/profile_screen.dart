@@ -170,7 +170,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       body: Stack(
         fit: StackFit.loose,
         alignment: AlignmentDirectional.topCenter,

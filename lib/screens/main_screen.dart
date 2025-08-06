@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../main.dart';
+import '../providers/theme_provider.dart';
 import '../styling/app_assets.dart';
 import '../styling/app_colors.dart';
 import '../styling/app_text_styles.dart';
@@ -25,7 +27,6 @@ class MainScreen extends StatelessWidget {
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
@@ -108,6 +109,22 @@ class MainScreen extends StatelessWidget {
                 _onPageTapped(context, 3); // Go to branch 3
               },
             ),
+            ListTile(
+              leading: Icon(
+                Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined,
+                color: AppColors.primaryColor,
+              ),
+              title: const Text('Theme'),
+              trailing: Switch(
+                inactiveTrackColor: Colors.grey[300],
+                value: Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark,
+                onChanged: (value) {
+                  Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                },
+              ),
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
@@ -125,12 +142,6 @@ class MainScreen extends StatelessWidget {
         currentIndex: navigationShell.currentIndex < 2
             ? navigationShell.currentIndex
             : navigationShell.currentIndex + 1,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.primaryColor,
-        unselectedItemColor: Colors.grey[600],
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
         iconSize: 30,
         onTap: (index) {
           if (index == 2) {

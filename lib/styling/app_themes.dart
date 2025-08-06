@@ -6,20 +6,66 @@ import 'app_text_styles.dart';
 
 class AppThemes {
   static final lightTheme = ThemeData(
-    scaffoldBackgroundColor: AppColors.whiteColor,
+    scaffoldBackgroundColor: Colors.grey[100],
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: AppColors.primaryColor,
+      unselectedItemColor: Colors.grey[600],
+      backgroundColor: AppColors.whiteColor,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      type: BottomNavigationBarType.fixed,
+    ),
     primaryColor: AppColors.primaryColor,
     fontFamily: AppFonts.mainFontName,
+
+
     textTheme: TextTheme(
       titleLarge: AppTextStyles.primaryHeadlineStyle,
-      titleMedium: AppTextStyles.subtitlesStyle,
+      titleMedium: AppTextStyles.blackTitleMediumTextStyle,
+    ),
+
+    buttonTheme: ButtonThemeData(
+      buttonColor: AppColors.primaryColor,
+      disabledColor: AppColors.secondaryColor,
+    ),
+
+    colorScheme: ColorScheme.fromSwatch(
+      primarySwatch: Colors.teal,
+    ).copyWith(secondary: Colors.white),
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    hoverColor: Colors.transparent,
+  );
+
+  // ---------------------------------------------------------
+
+  static final darkTheme = ThemeData(
+    scaffoldBackgroundColor: Colors.grey[900],
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: AppColors.primaryColor,
+      unselectedItemColor: Colors.grey[600],
+      backgroundColor: AppColors.blackColor,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      type: BottomNavigationBarType.fixed,
+    ),
+    primaryColor: AppColors.primaryColor,
+
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.primaryColor,
+      secondary: Colors.tealAccent,
+      brightness: Brightness.dark,
+    ),
+
+    textTheme: TextTheme(
+      titleLarge: AppTextStyles.primaryHeadlineStyle.copyWith(color: Colors.white),
+      titleMedium: AppTextStyles.whiteTitleMediumTextStyle,
     ),
     buttonTheme: ButtonThemeData(
       buttonColor: AppColors.primaryColor,
       disabledColor: AppColors.secondaryColor,
     ),
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: Colors.teal,
-    ).copyWith(secondary: Colors.white),
+
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
     hoverColor: Colors.transparent,

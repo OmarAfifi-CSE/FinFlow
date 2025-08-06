@@ -45,4 +45,20 @@ class AppTextStyles {
     fontSize: 20,
     fontWeight: FontWeight.w500,
   );
+
+
+  // for themes
+  static TextStyle whiteTitleMediumTextStyle = TextStyle(
+    color: AppColors.whiteColor,
+    fontFamily: AppFonts.mainFontName,
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  );
+  static TextStyle blackTitleMediumTextStyle = TextStyle(
+    color: AppColors.blackColor,
+    fontFamily: AppFonts.mainFontName,
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  );
+
 }

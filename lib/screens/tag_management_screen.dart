@@ -11,9 +11,7 @@ class TagManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
-
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       body: Consumer<ExpenseProvider>(
         builder: (context, consumerProvider, child) {
           final allTags = consumerProvider.tags;

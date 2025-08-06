@@ -44,7 +44,10 @@ class _HomeScreenState extends State<HomeScreen>
             return <Widget>[
               SliverToBoxAdapter(child: _buildBalanceCard(provider)),
               SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(_buildTabBar()),
+                delegate: _SliverAppBarDelegate(
+                  _buildTabBar(context),
+                  Theme.of(context),
+                ),
                 pinned: true,
               ),
             ];
@@ -154,23 +157,19 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Recent Transactions',
-            style: AppTextStyles.blackTextStyle.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Recent Transactions', style: theme.textTheme.titleMedium),
           const SizedBox(height: 16),
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(25.0),
             ),
             child: TabBar(
@@ -194,7 +193,9 @@ class _HomeScreenState extends State<HomeScreen>
                 fontWeight: FontWeight.w500,
                 fontSize: 16,
               ),
-              unselectedLabelColor: Colors.black54,
+              unselectedLabelColor: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black54,
               tabs: const [
                 Tab(text: "By Date"),
                 Tab(text: "By Category"),
@@ -207,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildExpensesByDate(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return RefreshIndicator(
       onRefresh: () => Provider.of<ExpenseProvider>(
         context,
@@ -240,6 +242,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildExpensesByCategory(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return RefreshIndicator(
       onRefresh: () => Provider.of<ExpenseProvider>(
         context,
@@ -313,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen>
               final item = itemsList[index];
 
               if (item is Map) {
-                final CategoryTheme theme =
+                final CategoryTheme categoryTheme =
                     categoryThemes[item['name']] ??
                     defaultCategoryThemes[item['name'].hashCode %
                         defaultCategoryThemes.length];
@@ -323,21 +326,26 @@ class _HomeScreenState extends State<HomeScreen>
                     style: AppTextStyles.blackTextStyle.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: theme.color,
+                      color: categoryTheme.color,
                     ),
                     children: [
                       if (item['percentage'] > 0)
                         TextSpan(
-                          text: ' (${item['percentage'].toStringAsFixed(1)}%${item['percentageLabel']})',
+                          text:
+                              ' (${item['percentage'].toStringAsFixed(1)}%${item['percentageLabel']})',
                           style: AppTextStyles.subtitlesStyle.copyWith(
-                            color: theme.color,
+                            color: categoryTheme.color,
                           ),
                         ),
                       TextSpan(
-                        text: '${MediaQuery.sizeOf(context).width < 600? '\n':' - '}Total: \$${item['total'].toStringAsFixed(2)}',
+                        text:
+                            '${MediaQuery.sizeOf(context).width < 600 ? '\n' : ' - '}Total: \$${item['total'].toStringAsFixed(2)}',
                         style: AppTextStyles.blackTextStyle.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: theme.brightness == Brightness.dark
+                              ? AppColors.whiteColor
+                              : AppColors.blackColor,
                         ),
                       ),
                     ],
@@ -354,17 +362,23 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildTransactionItem(BuildContext context, Expense expense) {
+    final ThemeData theme = Theme.of(context);
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
+
+    final bool isDarkMode = theme.brightness == Brightness.dark;
+    final bool isIncome = expense.amount > 0;
+    final Color incomeColor = isDarkMode ? Colors.greenAccent[400]! : Colors.green[800]!;
+    final Color expenseColor = isDarkMode ? Colors.redAccent[200]! : Colors.red[700]!;
+    final Color amountColor = isIncome ? incomeColor : expenseColor;
+    final String amountPrefix = isIncome ? '+' : '-';
+
     final categoryName = provider.getCategoryForId(expense.categoryId).name;
     final formattedName = toTitleCase(categoryName);
     final IconData icon = categoryIcons[formattedName] ?? Icons.category;
-    final CategoryTheme theme =
+    final CategoryTheme categoryTheme =
         categoryThemes[formattedName] ??
         defaultCategoryThemes[categoryName.hashCode %
             defaultCategoryThemes.length];
-    final bool isIncome = expense.amount > 0;
-    final Color amountColor = isIncome ? Colors.green[700]! : Colors.red;
-    final String amountPrefix = isIncome ? '+' : '-';
     final String formattedDate = DateFormat.yMMMd().format(expense.date);
     return InkWell(
       onTap: () {
@@ -385,18 +399,31 @@ class _HomeScreenState extends State<HomeScreen>
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           leading: CircleAvatar(
-            backgroundColor: theme.backgroundColor,
-            child: Icon(icon, color: theme.color),
+            backgroundColor: categoryTheme.backgroundColor,
+            child: Icon(icon, color: categoryTheme.color),
           ),
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(categoryName, style: TextStyle(color: theme.color)),
+            child: Text(
+              categoryName,
+              style: theme.textTheme.bodySmall!.copyWith(
+                color: categoryTheme.color,
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+              ),
+            ),
           ),
           subtitle: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(formattedDate),
+            child: Text(
+              formattedDate,
+              style: theme.textTheme.bodySmall!.copyWith(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+              ),
+            ),
           ),
           trailing: ConstrainedBox(
             constraints: BoxConstraints(
@@ -407,9 +434,9 @@ class _HomeScreenState extends State<HomeScreen>
               alignment: Alignment.centerRight,
               child: Text(
                 '$amountPrefix \$${expense.amount.abs().toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: theme.textTheme.titleLarge!.copyWith(
                   color: amountColor,
+                  fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
@@ -422,9 +449,10 @@ class _HomeScreenState extends State<HomeScreen>
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
+  _SliverAppBarDelegate(this._tabBar, this.theme);
 
   final Widget _tabBar;
+  final ThemeData theme;
 
   @override
   double get minExtent => 135;
@@ -438,11 +466,15 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(color: Colors.grey[100], child: _tabBar);
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: _tabBar,
+    );
   }
 
   @override
+  @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
+    return oldDelegate.theme != theme;
   }
 }

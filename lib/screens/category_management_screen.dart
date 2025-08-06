@@ -20,7 +20,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       body: Consumer<ExpenseProvider>(
         builder: (context, consumerProvider, child) {
           final allCategories = consumerProvider.categories;
