@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../main.dart';
 import '../styling/app_assets.dart';
 import '../styling/app_colors.dart';
+import '../styling/app_text_styles.dart';
 import 'add_expense_sheet.dart';
 
 class MainScreen extends StatelessWidget {
@@ -52,7 +53,15 @@ class MainScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.home, color: AppColors.primaryColor),
+              leading: SvgPicture.asset(
+                AppAssets.homeIcon,
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  AppColors.primaryColor,
+                  BlendMode.srcIn,
+                ),
+              ),
               title: const Text('Home'),
               onTap: () {
                 context.pop();
@@ -61,7 +70,8 @@ class MainScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(
-                Icons.category,
+                size: 24,
+                Icons.category_outlined,
                 color: AppColors.primaryColor,
               ),
               title: const Text('Manage Categories'),
@@ -71,7 +81,11 @@ class MainScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.tag, color: AppColors.primaryColor),
+              leading: const Icon(
+                size: 24,
+                Icons.tag,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Manage Tags'),
               onTap: () {
                 context.pop();
@@ -79,7 +93,15 @@ class MainScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: AppColors.primaryColor),
+              leading: SvgPicture.asset(
+                AppAssets.profileIcon,
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  AppColors.primaryColor,
+                  BlendMode.srcIn,
+                ),
+              ),
               title: const Text('Profile'),
               onTap: () {
                 context.pop();
