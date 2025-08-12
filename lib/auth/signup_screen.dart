@@ -61,7 +61,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.green[600],
-            content: Text(
+            content: const Text(
               'Success! Please check your email to confirm your account.',
             ),
           ),
@@ -105,13 +105,13 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
+                  const Text(
                     textAlign: TextAlign.center,
                     "Create Account",
                     style: AppTextStyles.primaryHeadlineStyle,
                   ),
                   const SizedBox(height: 55),
-                  Text(
+                  const Text(
                     textAlign: TextAlign.start,
                     "Sign Up",
                     style: AppTextStyles.primaryHeadlineStyle,
