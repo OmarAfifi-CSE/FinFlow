@@ -1,12 +1,11 @@
-import 'package:expense_manager/widgets/custom_primary_button.dart';
 import 'package:expense_manager/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/expense_provider.dart';
 import '../providers/theme_provider.dart';
 import '../styling/app_colors.dart';
-import '../widgets/wave_clipper.dart';
 import '../main.dart'; // Import for the global supabase client
 
 class ProfileScreen extends StatefulWidget {
@@ -118,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     context.pop(); // Close the dialog
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Password reset link sent! Please check your email.',
                                         ),
                                         backgroundColor: Colors.green[600],
@@ -169,104 +168,353 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildGradientCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    final isDark =
+        Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark;
+    return Container(
+      margin: margin,
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.grey[800]!.withValues(alpha: 0.8),
+                  Colors.grey[900]!.withValues(alpha: 0.6),
+                ]
+              : [
+                  Colors.grey[100]!.withValues(alpha: 0.8),
+                  Colors.grey[50]!.withValues(alpha: 0.6),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: _buildGradientCard(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              title,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Enhanced gradient background
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          height: 300,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(10),
+              topLeft: Radius.circular(40),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(40),
+            ),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryColor,
+                AppColors.primaryColor.withValues(alpha: 0.8),
+                AppColors.primaryColorShade,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        // Main content
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 65,
+                backgroundColor: Colors.white,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.teal[200],
+                  child: const Icon(
+                    Icons.person,
+                    size: 80,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Column(
+              children: [
+                Text(
+                  _username,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  _email,
+                  style:
+                      Provider.of<ThemeProvider>(context).themeMode ==
+                          ThemeMode.dark
+                      ? const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white54,
+                        )
+                      : const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.loose,
-        alignment: AlignmentDirectional.topCenter,
-        children: [
-          ClipPath(
-            clipper: WaveClipper(),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: 450,
-              decoration: const BoxDecoration(color: AppColors.primaryColor),
-            ),
-          ),
-          SingleChildScrollView(
-            child: Center(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildProfileHeader(),
+
+            // Stats Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 60, bottom: 20),
-                    child: Text(
-                      "Profile",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    spacing: 16,
+                    children: [
+                      _buildStatCard(
+                        "Expenses",
+                        '\$${Provider.of<ExpenseProvider>(context).totalExpenses.toStringAsFixed(0)}',
+                        Icons.trending_down,
+                        Colors.red,
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(0),
-                    child: CircleAvatar(
-                      radius: 80,
-                      backgroundColor: Colors.teal[300],
-                      child: const Icon(
-                        Icons.person,
-                        size: 140,
-                        color: Colors.white,
+                      _buildStatCard(
+                        "Income",
+                        '\$${Provider.of<ExpenseProvider>(context).totalIncome.toStringAsFixed(0)}',
+                        Icons.trending_up,
+                        Colors.green,
                       ),
-                    ),
+                      _buildStatCard(
+                        "Categories",
+                        Provider.of<ExpenseProvider>(
+                          context,
+                        ).categories.length.toString(),
+                        Icons.category,
+                        Colors.blue,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 15),
-                  Text(
-                    _username,
-                    textAlign: TextAlign.center,
-                    style:
-                        Provider.of<ThemeProvider>(context).themeMode ==
-                            ThemeMode.dark
-                        ? const TextStyle(
+                  const SizedBox(height: 30),
+
+                  // Settings Section
+                  _buildGradientCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Account Settings",
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white54,
-                          )
-                        : const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildSettingTile(
+                          icon: Icons.lock_outline,
+                          title: "Change Password",
+                          subtitle: "Update your password",
+                          onTap: _showChangePasswordDialog,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Log Out Section
+                  _buildGradientCard(
+                    child: _buildSettingTile(
+                      icon: Icons.logout,
+                      title: "Log Out",
+                      subtitle: "Sign out of your account",
+                      onTap: () async {
+                        await _showLogoutDialog();
+                      },
+                      color: Colors.red,
+                      isDestructive: true,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color color,
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDestructive ? Colors.red : null,
+                    ),
                   ),
                   Text(
-                    _email,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 10),
-                    child: CustomPrimaryButton(
-                      buttonText: 'Change Password',
-                      icon: Icons.lock,
-                      onPressed: _showChangePasswordDialog,
-                      borderRadius: 12,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 40),
-                    child: CustomPrimaryButton(
-                      buttonText: 'Log Out',
-                      textColor: Colors.red[700],
-                      icon: Icons.logout,
-                      onPressed: () async {
-                        await supabase.auth.signOut();
-                      },
-                      borderRadius: 12,
-                      buttonColor: Colors.red[50]!,
-                    ),
+                    subtitle,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            Icon(Icons.chevron_right, color: Colors.grey[400]),
+          ],
+        ),
       ),
+    );
+  }
+
+  Future<void> _showLogoutDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Log Out'),
+            ],
+          ),
+          content: const Text(
+            'Are you sure you want to log out of your account?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                context.pop();
+                await supabase.auth.signOut();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Log Out'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
