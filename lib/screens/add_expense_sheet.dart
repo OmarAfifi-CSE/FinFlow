@@ -201,10 +201,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               Text(
                 widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.blackTextStyle.copyWith(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold,),
               ),
               const SizedBox(height: 24),
               buildTransactionTypeToggle(),
@@ -452,9 +449,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
 
   Widget buildCategoryDropdown(BuildContext context) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
+    final theme = Theme.of(context);
     return Consumer<ExpenseProvider>(
       builder: (context, consumerProvider, child) {
         return DropdownButtonFormField<String>(
+          dropdownColor: theme.scaffoldBackgroundColor,
           menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
           borderRadius: BorderRadius.circular(12),
           value: _selectedCategoryId,
@@ -526,9 +525,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
 
   Widget buildTagDropdown(BuildContext context) {
     final provider = Provider.of<ExpenseProvider>(context, listen: false);
+    final theme = Theme.of(context);
     return Consumer<ExpenseProvider>(
       builder: (context, consumerProvider, child) {
         return DropdownButtonFormField<String?>(
+          dropdownColor: theme.scaffoldBackgroundColor,
           menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
           borderRadius: BorderRadius.circular(12),
           value: _selectedTagId,

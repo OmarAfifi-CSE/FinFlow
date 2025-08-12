@@ -52,10 +52,16 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     color: Colors.red[700],
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     alignment: Alignment.centerRight,
-                    child: const Icon(Icons.delete_forever, color: Colors.white),
+                    child: const Icon(
+                      Icons.delete_forever,
+                      color: Colors.white,
+                    ),
                   ),
                   confirmDismiss: (direction) async {
-                    return await _showDeleteConfirmationDialog(context, category);
+                    return await _showDeleteConfirmationDialog(
+                      context,
+                      category,
+                    );
                   },
                   onDismissed: (direction) {
                     _deleteCategoryAndShowSnackBar(context, provider, category);
@@ -78,27 +84,27 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         category.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      trailing:IconButton(
-                              icon: Icon(
-                                Icons.delete_outline,
-                                color: Colors.red[700],
-                              ),
-                              tooltip: 'Delete Category',
-                              onPressed: () async {
-                                final bool? shouldDelete =
-                                    await _showDeleteConfirmationDialog(
-                                      context,
-                                      category,
-                                    );
-                                if (shouldDelete == true) {
-                                  _deleteCategoryAndShowSnackBar(
-                                    context,
-                                    provider,
-                                    category,
-                                  );
-                                }
-                              },
-                            ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.red[700],
+                        ),
+                        tooltip: 'Delete Category',
+                        onPressed: () async {
+                          final bool? shouldDelete =
+                              await _showDeleteConfirmationDialog(
+                                context,
+                                category,
+                              );
+                          if (shouldDelete == true) {
+                            _deleteCategoryAndShowSnackBar(
+                              context,
+                              provider,
+                              category,
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ),
                 );
@@ -117,10 +123,10 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   }
 
   Future<void> _deleteCategoryAndShowSnackBar(
-      BuildContext context,
-      ExpenseProvider provider,
-      ExpenseCategory category,
-      ) async {
+    BuildContext context,
+    ExpenseProvider provider,
+    ExpenseCategory category,
+  ) async {
     final deletedData = await provider.deleteCategory(category.id);
     if (mounted && deletedData != null) {
       ScaffoldMessenger.of(context).removeCurrentSnackBar();

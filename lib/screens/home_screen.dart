@@ -217,9 +217,9 @@ class _HomeScreenState extends State<HomeScreen>
       child: Consumer<ExpenseProvider>(
         builder: (context, provider, child) {
           if (provider.expenses.isEmpty) {
-            return Center(
+            return const Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   textAlign: TextAlign.center,
                   "No transactions yet. Tap '+' to add one!",
@@ -251,9 +251,9 @@ class _HomeScreenState extends State<HomeScreen>
       child: Consumer<ExpenseProvider>(
         builder: (context, provider, child) {
           if (provider.expenses.isEmpty) {
-            return Center(
+            return const Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   textAlign: TextAlign.center,
                   "No transactions yet. Tap '+' to add one!",
@@ -367,8 +367,12 @@ class _HomeScreenState extends State<HomeScreen>
 
     final bool isDarkMode = theme.brightness == Brightness.dark;
     final bool isIncome = expense.amount > 0;
-    final Color incomeColor = isDarkMode ? Colors.greenAccent[400]! : Colors.green[800]!;
-    final Color expenseColor = isDarkMode ? Colors.redAccent[200]! : Colors.red[700]!;
+    final Color incomeColor = isDarkMode
+        ? Colors.greenAccent[400]!
+        : Colors.green[800]!;
+    final Color expenseColor = isDarkMode
+        ? Colors.redAccent[200]!
+        : Colors.red[700]!;
     final Color amountColor = isIncome ? incomeColor : expenseColor;
     final String amountPrefix = isIncome ? '+' : '-';
 
