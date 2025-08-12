@@ -18,13 +18,12 @@ class AppThemes {
     primaryColor: AppColors.primaryColor,
     fontFamily: AppFonts.mainFontName,
 
-
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: AppTextStyles.primaryHeadlineStyle,
       titleMedium: AppTextStyles.blackTitleMediumTextStyle,
     ),
 
-    buttonTheme: ButtonThemeData(
+    buttonTheme: const ButtonThemeData(
       buttonColor: AppColors.primaryColor,
       disabledColor: AppColors.secondaryColor,
     ),
@@ -51,17 +50,19 @@ class AppThemes {
     ),
     primaryColor: AppColors.primaryColor,
 
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: AppColors.primaryColor,
       secondary: Colors.tealAccent,
       brightness: Brightness.dark,
     ),
 
     textTheme: TextTheme(
-      titleLarge: AppTextStyles.primaryHeadlineStyle.copyWith(color: Colors.white),
+      titleLarge: AppTextStyles.primaryHeadlineStyle.copyWith(
+        color: Colors.white,
+      ),
       titleMedium: AppTextStyles.whiteTitleMediumTextStyle,
     ),
-    buttonTheme: ButtonThemeData(
+    buttonTheme: const ButtonThemeData(
       buttonColor: AppColors.primaryColor,
       disabledColor: AppColors.secondaryColor,
     ),

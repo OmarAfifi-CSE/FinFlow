@@ -15,7 +15,7 @@ class OnboardingScreen extends StatelessWidget {
     final content = Column(
       children: [
         Image(
-          image: AssetImage(AppAssets.onboardingImage),
+          image: const AssetImage(AppAssets.onboardingImage),
           width: MediaQuery.of(context).size.width < 500
               ? MediaQuery.of(context).size.width
               : 300,
@@ -49,11 +49,10 @@ class OnboardingScreen extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 50),
+        const SizedBox(height: 50),
       ],
     );
     return Scaffold(
-      backgroundColor: Color(0xffE5E5E5),
       body: MediaQuery.of(context).size.width < 500
           ? SingleChildScrollView(child: content)
           : Center(child: SingleChildScrollView(child: content)),

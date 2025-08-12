@@ -53,16 +53,13 @@ class CustomPrimaryButton extends StatelessWidget {
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: textColor ?? Colors.white,
-                size: 22,
-              ),
-              SizedBox(width: 8),
-              Text(buttonText ?? ""),
-            ],
-          ),
+              children: [
+                if (icon != null)
+                  Icon(icon, color: textColor ?? Colors.white, size: 20),
+                if (icon != null) const SizedBox(width: 8),
+                Text(buttonText ?? ""),
+              ],
+            ),
     );
   }
 }

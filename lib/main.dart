@@ -26,7 +26,7 @@ Future<void> main() async {
     ),
   );
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
