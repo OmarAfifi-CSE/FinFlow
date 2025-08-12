@@ -235,11 +235,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: MediaQuery.sizeOf(context).width > 700 ? 18 : 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
               title,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: MediaQuery.sizeOf(context).width > 700 ? 18 : 12,
+                color: Colors.grey[600],
+              ),
             ),
           ],
         ),
@@ -318,13 +324,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style:
                       Provider.of<ThemeProvider>(context).themeMode ==
                           ThemeMode.dark
-                      ? const TextStyle(
-                          fontSize: 16,
+                      ? TextStyle(
+                          fontSize: MediaQuery.sizeOf(context).width > 700
+                              ? 20
+                              : 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.white54,
                         )
-                      : const TextStyle(
-                          fontSize: 16,
+                      : TextStyle(
+                          fontSize: MediaQuery.sizeOf(context).width > 700
+                              ? 20
+                              : 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.black54,
                         ),
@@ -456,14 +466,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: MediaQuery.sizeOf(context).width > 700
+                          ? 18
+                          : 16,
                       fontWeight: FontWeight.w600,
                       color: isDestructive ? Colors.red : null,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: MediaQuery.sizeOf(context).width > 700
+                          ? 16
+                          : 14,
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
