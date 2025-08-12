@@ -2,7 +2,9 @@ import 'package:expense_manager/widgets/custom_primary_button.dart';
 import 'package:expense_manager/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/theme_provider.dart';
 import '../styling/app_colors.dart';
 import '../widgets/wave_clipper.dart';
 import '../main.dart'; // Import for the global supabase client
@@ -185,6 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SingleChildScrollView(
             child: Center(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Padding(
@@ -195,7 +198,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
                       ),
                     ),
                   ),
@@ -215,19 +217,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     _username,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                    style:
+                        Provider.of<ThemeProvider>(context).themeMode ==
+                            ThemeMode.dark
+                        ? const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white54,
+                          )
+                        : const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54,
+                          ),
                   ),
                   Text(
                     _email,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
-                      color: Colors.black54,
                     ),
                   ),
                   Padding(
