@@ -66,10 +66,9 @@ class _SigninScreenState extends State<SigninScreen> {
           ),
         );
       }
-    }finally {
+    } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-
   }
 
   Future<void> _showForgotPasswordDialog() async {
@@ -151,7 +150,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                     context.pop(); // Close the dialog
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Password reset link sent! Please check your email.',
                                         ),
                                         backgroundColor: Colors.green[600],
@@ -212,19 +211,19 @@ class _SigninScreenState extends State<SigninScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
+                const Text(
                   textAlign: TextAlign.center,
                   "Welcome Back",
                   style: AppTextStyles.primaryHeadlineStyle,
                 ),
                 const SizedBox(height: 55),
-                Text(
+                const Text(
                   textAlign: TextAlign.start,
                   "Login",
                   style: AppTextStyles.primaryHeadlineStyle,
                 ),
                 const SizedBox(height: 25),
-                CustomTextFieldLabel(
+                const CustomTextFieldLabel(
                   icon: Icons.mail_outlined,
                   label: "Your email",
                 ),
@@ -237,7 +236,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   valMessage: "Please enter your email",
                 ),
                 const SizedBox(height: 30),
-                CustomTextFieldLabel(
+                const CustomTextFieldLabel(
                   icon: Icons.lock_outline,
                   label: "Your password",
                 ),
@@ -277,10 +276,7 @@ class _SigninScreenState extends State<SigninScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    const Text("Don't have an account?"),
                     const SizedBox(width: 4),
                     InkWell(
                       onTap: () {

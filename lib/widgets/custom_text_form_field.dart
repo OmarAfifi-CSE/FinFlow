@@ -45,7 +45,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     return Form(
       key: widget.formKey,
       child: TextFormField(
-        style: TextStyle(fontSize: 16),
+        style: AppTextStyles.blackTextStyle.copyWith(fontSize: 16),
         controller: widget.controller,
         validator: (value) {
           if (value!.isEmpty) {
@@ -56,7 +56,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         cursorColor: AppColors.primaryColor,
         obscureText: _isObscured,
         decoration: InputDecoration(
-
           hintText: widget.hintText,
           hintStyle: AppTextStyles.subtitlesStyle,
           filled: true,
@@ -64,11 +63,17 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           contentPadding: const EdgeInsets.all(14),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.secondaryColor, width: 1),
+            borderSide: const BorderSide(
+              color: AppColors.secondaryColor,
+              width: 1,
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.primaryColor,width: 2),
+            borderSide: const BorderSide(
+              color: AppColors.primaryColor,
+              width: 2,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),

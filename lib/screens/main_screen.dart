@@ -6,7 +6,6 @@ import '../main.dart';
 import '../providers/theme_provider.dart';
 import '../styling/app_assets.dart';
 import '../styling/app_colors.dart';
-import '../styling/app_text_styles.dart';
 import 'add_expense_sheet.dart';
 
 class MainScreen extends StatelessWidget {
@@ -58,7 +57,7 @@ class MainScreen extends StatelessWidget {
                 AppAssets.homeIcon,
                 width: 24,
                 height: 24,
-                colorFilter: ColorFilter.mode(
+                colorFilter: const ColorFilter.mode(
                   AppColors.primaryColor,
                   BlendMode.srcIn,
                 ),
@@ -98,7 +97,7 @@ class MainScreen extends StatelessWidget {
                 AppAssets.profileIcon,
                 width: 24,
                 height: 24,
-                colorFilter: ColorFilter.mode(
+                colorFilter: const ColorFilter.mode(
                   AppColors.primaryColor,
                   BlendMode.srcIn,
                 ),
@@ -119,9 +118,14 @@ class MainScreen extends StatelessWidget {
               title: const Text('Theme'),
               trailing: Switch(
                 inactiveTrackColor: Colors.grey[300],
-                value: Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark,
+                value:
+                    Provider.of<ThemeProvider>(context).themeMode ==
+                    ThemeMode.dark,
                 onChanged: (value) {
-                  Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                  Provider.of<ThemeProvider>(
+                    context,
+                    listen: false,
+                  ).toggleTheme();
                 },
               ),
             ),
@@ -177,7 +181,7 @@ class MainScreen extends StatelessWidget {
             icon: Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryColor,
               ),
@@ -191,7 +195,11 @@ class MainScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   color: Colors.white,
                 ),
-                child: Icon(Icons.add, color: AppColors.primaryColor, size: 20),
+                child: const Icon(
+                  Icons.add,
+                  color: AppColors.primaryColor,
+                  size: 20,
+                ),
               ),
             ),
             label: '',

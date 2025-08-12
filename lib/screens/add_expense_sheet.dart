@@ -554,7 +554,11 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
                   value: tag.id,
                   child: Row(
                     children: [
-                      Icon(Icons.tag, color: AppColors.primaryColor, size: 20),
+                      const Icon(
+                        Icons.tag,
+                        color: AppColors.primaryColor,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Text(tag.name),
                     ],

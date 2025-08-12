@@ -14,16 +14,12 @@ class CustomTextFieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 5),
+        const SizedBox(width: 5),
         Icon(icon, size: 12),
         Text(
           textAlign: TextAlign.start,
           " $label",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-          ),
+          style: const TextStyle(fontSize: 12),
         ),
       ],
     );

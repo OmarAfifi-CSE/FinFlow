@@ -45,7 +45,7 @@ class _ConnectivityMonitorState extends State<ConnectivityMonitor> {
       // Show a helpful message and refetch the data from Supabase.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
+          duration: const Duration(milliseconds: 1500),
           content: const Text("You're back online. Syncing data..."),
           backgroundColor: Colors.green[600],
         ),
@@ -90,7 +90,7 @@ class _ConnectivityMonitorState extends State<ConnectivityMonitor> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withAlpha(50),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
