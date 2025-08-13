@@ -1,3 +1,4 @@
+import 'package:expense_manager/screens/widgets/show_logout_dialog.dart' show showLogoutDialog;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -135,8 +136,7 @@ class MainScreen extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout'),
               onTap: () async {
-                context.pop();
-                await supabase.auth.signOut();
+                await showLogoutDialog(context);
               },
             ),
           ],
