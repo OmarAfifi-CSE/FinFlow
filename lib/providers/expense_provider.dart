@@ -316,10 +316,7 @@ class ExpenseProvider with ChangeNotifier {
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Education'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Gifts'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Family'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pets'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Home'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Investments'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Business'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Salary'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Savings'},
     ];
@@ -329,16 +326,45 @@ class ExpenseProvider with ChangeNotifier {
 
   Future<void> _addDefaultTags(String userId) async {
     final List<Map<String, dynamic>> defaultTags = [
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Breakfast'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Lunch'},
+      // --- Food ---
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Dinner'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Treat'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Cafe'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Coffee'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Restaurant'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Train'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Vacation'},
+
+      // --- Shopping & Home ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Clothes'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Electronics'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Repairs'},
+
+      // --- Transport ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Taxi'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Fuel'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Car Maintenance'},
+
+      // --- Bills & Subscriptions ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Subscriptions'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Insurance'},
+
+      // --- Health & Wellness ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Doctor'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pharmacy'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Gym'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Self Care'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Car Stuff'},
+
+      // --- Entertainment & Leisure ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Movies'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Games'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Hobbies'},
+
+      // --- Travel ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Vacation'},
+
+      // --- Family & Pets ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Kids'},
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Pet Food'},
+
+      // --- Salary ---
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Bonus'},
     ];
     await supabase.from('tags').insert(defaultTags);
     await fetchInitialData();
