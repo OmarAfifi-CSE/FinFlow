@@ -135,8 +135,6 @@ class ExpenseProvider with ChangeNotifier {
 
       _isDataLoaded = true;
 
-      if (_categories.isEmpty) await _addDefaultCategories(userId);
-      if (_tags.isEmpty) await _addDefaultTags(userId);
     } catch (e) {
       debugPrint('Error fetching data: $e');
     }
