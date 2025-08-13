@@ -255,96 +255,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Enhanced gradient background
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          height: 300,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(10),
-              topLeft: Radius.circular(40),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(40),
-            ),
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primaryColor,
-                AppColors.primaryColor.withValues(alpha: 0.8),
-                AppColors.primaryColorShade,
+    return
+    // Enhanced gradient background
+    Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      width: MediaQuery.sizeOf(context).width,
+      height: 300,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(10),
+          topLeft: Radius.circular(40),
+          bottomLeft: Radius.circular(10),
+          bottomRight: Radius.circular(40),
+        ),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryColor,
+            AppColors.primaryColor.withValues(alpha: 0.8),
+            AppColors.primaryColorShade,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
               ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            ),
+            child: CircleAvatar(
+              radius: 65,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.teal[200],
+                child: const Icon(Icons.person, size: 80, color: Colors.white),
+              ),
             ),
           ),
-        ),
-        // Main content
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: 65,
-                backgroundColor: Colors.white,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.teal[200],
-                  child: const Icon(
-                    Icons.person,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+          const SizedBox(height: 20),
+          Column(
+            children: [
+              Text(
+                _username,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Column(
-              children: [
-                Text(
-                  _username,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  _email,
-                  style:
-                      Provider.of<ThemeProvider>(context).themeMode ==
-                          ThemeMode.dark
-                      ? TextStyle(
-                          fontSize: MediaQuery.sizeOf(context).width > 700
-                              ? 20
-                              : 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white54,
-                        )
-                      : TextStyle(
-                          fontSize: MediaQuery.sizeOf(context).width > 700
-                              ? 20
-                              : 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+              Text(
+                _email,
+                style:
+                    Provider.of<ThemeProvider>(context).themeMode ==
+                        ThemeMode.dark
+                    ? TextStyle(
+                        fontSize: MediaQuery.sizeOf(context).width > 700
+                            ? 20
+                            : 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white54,
+                      )
+                    : TextStyle(
+                        fontSize: MediaQuery.sizeOf(context).width > 700
+                            ? 20
+                            : 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black54,
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
