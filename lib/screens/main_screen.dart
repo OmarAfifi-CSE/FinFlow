@@ -121,11 +121,12 @@ class MainScreen extends StatelessWidget {
                 value:
                     Provider.of<ThemeProvider>(context).themeMode ==
                     ThemeMode.dark,
-                onChanged: (value) {
+                onChanged: (isDark) {
+                  final themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
                   Provider.of<ThemeProvider>(
                     context,
                     listen: false,
-                  ).toggleTheme();
+                  ).setTheme(themeMode);
                 },
               ),
             ),
