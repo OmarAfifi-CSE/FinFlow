@@ -6,7 +6,6 @@ import 'package:uuid/uuid.dart';
 import '../models/expense.dart';
 import '../providers/expense_provider.dart';
 import '../styling/app_colors.dart';
-import '../styling/app_text_styles.dart';
 import '../utils/app_constants.dart';
 
 const uuid = Uuid();
@@ -201,7 +200,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet>
               Text(
                 widget.expense == null ? 'Add Transaction' : 'Edit Transaction',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold,),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 24),
               buildTransactionTypeToggle(),

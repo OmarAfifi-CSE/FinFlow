@@ -14,9 +14,10 @@ const uuid = Uuid();
 class ExpenseProvider with ChangeNotifier {
   bool _isLoading = true;
   bool _isDataLoaded = false;
-  bool get isLoading => _isLoading;
-  bool get isDataLoaded => _isDataLoaded;
 
+  bool get isLoading => _isLoading;
+
+  bool get isDataLoaded => _isDataLoaded;
 
   // --- Data Lists ---
   List<Expense> _expenses = [];
@@ -25,7 +26,9 @@ class ExpenseProvider with ChangeNotifier {
 
   // --- Public Getters ---
   List<Expense> get expenses => _expenses;
+
   List<ExpenseCategory> get categories => _categories;
+
   List<Tag> get tags => _tags;
 
   // --- Calculated Getters ---
@@ -39,6 +42,59 @@ class ExpenseProvider with ChangeNotifier {
   double get totalExpenses => _expenses
       .where((e) => e.amount < 0)
       .fold(0.0, (sum, e) => sum + e.amount.abs());
+
+  List<Expense> get sortedExpensesByDate {
+    final sorted = List<Expense>.from(_expenses);
+    sorted.sort((a, b) => b.date.compareTo(a.date));
+    return sorted;
+  }
+
+  List<dynamic> get getExpensesByCategory {
+    if (_expenses.isEmpty) return [];
+
+    final grouped = groupBy(sortedExpensesByDate, (Expense e) => e.categoryId);
+
+    final List<dynamic> itemsList = [];
+    for (var entry in grouped.entries) {
+      final categoryName = getCategoryForId(entry.key).name;
+      final total = entry.value.fold(
+        0.0,
+        (prev, Expense element) => prev + element.amount,
+      );
+
+      double percentage = 0.0;
+      String percentageLabel = '';
+
+      if (total > 0) {
+        final double categoryIncomeTotal = entry.value
+            .where((e) => e.amount > 0)
+            .fold(0.0, (sum, e) => sum + e.amount);
+
+        if (totalIncome > 0) {
+          percentage = (categoryIncomeTotal / totalIncome) * 100;
+          percentageLabel = ' of income';
+        }
+      } else if (total < 0) {
+        final double categoryExpenseTotal = entry.value
+            .where((e) => e.amount < 0)
+            .fold(0.0, (sum, e) => sum + e.amount.abs());
+
+        if (totalExpenses > 0) {
+          percentage = (categoryExpenseTotal / totalExpenses) * 100;
+          percentageLabel = ' of expenses';
+        }
+      }
+
+      itemsList.add({
+        'name': categoryName,
+        'total': total,
+        'percentage': percentage,
+        'percentageLabel': percentageLabel,
+      });
+      itemsList.addAll(entry.value);
+    }
+    return itemsList;
+  }
 
   // --- Data Fetching from Supabase ---
   Future<void> fetchInitialData() async {
@@ -82,7 +138,6 @@ class ExpenseProvider with ChangeNotifier {
     await fetchInitialData();
   }
 
-
   // --- CRUD Operations ---
 
   Future<void> addOrUpdateExpense(Expense expense) async {
@@ -121,11 +176,11 @@ class ExpenseProvider with ChangeNotifier {
   }
 
   Future<ExpenseCategory?> addCategory(
-      String name, {
-        bool isDefault = false,
-      }) async {
+    String name, {
+    bool isDefault = false,
+  }) async {
     if (_categories.any(
-          (cat) => cat.name.toLowerCase() == name.toLowerCase(),
+      (cat) => cat.name.toLowerCase() == name.toLowerCase(),
     )) {
       debugPrint('Category with this name already exists locally.');
       return null;
@@ -134,10 +189,7 @@ class ExpenseProvider with ChangeNotifier {
     final user = supabase.auth.currentUser;
     if (user == null) return null;
 
-    final newCategory = ExpenseCategory(
-      id: uuid.v4(),
-      name: name,
-    );
+    final newCategory = ExpenseCategory(id: uuid.v4(), name: name);
 
     final categoryMap = newCategory.toJson();
     categoryMap['user_id'] = user.id;
@@ -163,11 +215,15 @@ class ExpenseProvider with ChangeNotifier {
   }
 
   Future<DeletedCategoryData?> deleteCategory(String id) async {
-    final categoryToDelete = _categories.firstWhereOrNull((cat) => cat.id == id);
+    final categoryToDelete = _categories.firstWhereOrNull(
+      (cat) => cat.id == id,
+    );
     if (categoryToDelete == null) {
       return null;
     }
-    final relatedExpenses = _expenses.where((exp) => exp.categoryId == id).toList();
+    final relatedExpenses = _expenses
+        .where((exp) => exp.categoryId == id)
+        .toList();
     _categories.removeWhere((category) => category.id == id);
     _expenses.removeWhere((expense) => expense.categoryId == id);
     notifyListeners();
@@ -179,6 +235,7 @@ class ExpenseProvider with ChangeNotifier {
     }
     return DeletedCategoryData(categoryToDelete, relatedExpenses);
   }
+
   Future<void> undoDeleteCategory(DeletedCategoryData deletedData) async {
     final categoryMap = deletedData.category.toJson();
     categoryMap['user_id'] = supabase.auth.currentUser!.id;
@@ -241,9 +298,8 @@ class ExpenseProvider with ChangeNotifier {
   // --- Helper and Default Data functions ---
   ExpenseCategory getCategoryForId(String categoryId) {
     return categories.firstWhere(
-          (cat) => cat.id == categoryId,
-      orElse: () =>
-          ExpenseCategory(id: 'unknown', name: 'Unknown'),
+      (cat) => cat.id == categoryId,
+      orElse: () => ExpenseCategory(id: 'unknown', name: 'Unknown'),
     );
   }
 
@@ -257,7 +313,7 @@ class ExpenseProvider with ChangeNotifier {
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Entertainment'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Health'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Travel'},
-      {'id': uuid.v4(), 'user_id': userId, 'name': 'Education', },
+      {'id': uuid.v4(), 'user_id': userId, 'name': 'Education'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Gifts'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Family'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Pets'},

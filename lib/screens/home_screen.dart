@@ -3,7 +3,6 @@ import 'package:expense_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:collection/collection.dart';
 import '../models/expense.dart';
 import '../styling/app_colors.dart';
 import '../styling/app_text_styles.dart';
@@ -208,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildExpensesByDate(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    Theme.of(context);
     return RefreshIndicator(
       onRefresh: () => Provider.of<ExpenseProvider>(
         context,
@@ -216,7 +215,8 @@ class _HomeScreenState extends State<HomeScreen>
       ).forceRefreshData(),
       child: Consumer<ExpenseProvider>(
         builder: (context, provider, child) {
-          if (provider.expenses.isEmpty) {
+          final expenses = provider.expenses;
+          if (expenses.isEmpty) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
@@ -228,13 +228,11 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             );
           }
-          final sortedExpenses = provider.expenses
-            ..sort((a, b) => b.date.compareTo(a.date));
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: sortedExpenses.length,
+            itemCount: expenses.length,
             itemBuilder: (context, index) =>
-                _buildTransactionItem(context, sortedExpenses[index]),
+                _buildTransactionItem(context, provider.sortedExpensesByDate[index]),
           );
         },
       ),
@@ -262,53 +260,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             );
           }
-          final sortedExpenses = List<Expense>.from(provider.expenses)
-            ..sort((a, b) => b.date.compareTo(a.date));
-          final grouped = groupBy(sortedExpenses, (Expense e) => e.categoryId);
-
-          final double grandTotalIncome = provider.totalIncome;
-          final double grandTotalExpenses = provider.totalExpenses;
-
-          final List<dynamic> itemsList = [];
-          for (var entry in grouped.entries) {
-            final categoryName = provider.getCategoryForId(entry.key).name;
-            final total = entry.value.fold(
-              0.0,
-              (prev, Expense element) => prev + element.amount,
-            );
-
-            double percentage = 0.0;
-            String percentageLabel = '';
-
-            if (total > 0) {
-              final double categoryIncomeTotal = entry.value
-                  .where((e) => e.amount > 0)
-                  .fold(0.0, (sum, e) => sum + e.amount);
-
-              if (grandTotalIncome > 0) {
-                percentage = (categoryIncomeTotal / grandTotalIncome) * 100;
-                percentageLabel = ' of income';
-              }
-            } else if (total < 0) {
-              final double categoryExpenseTotal = entry.value
-                  .where((e) => e.amount < 0)
-                  .fold(0.0, (sum, e) => sum + e.amount.abs());
-
-              if (grandTotalExpenses > 0) {
-                percentage = (categoryExpenseTotal / grandTotalExpenses) * 100;
-                percentageLabel = ' of expenses';
-              }
-            }
-
-            itemsList.add({
-              'name': categoryName,
-              'total': total,
-              'percentage': percentage,
-              'percentageLabel': percentageLabel,
-            });
-            itemsList.addAll(entry.value);
-          }
-
+          final itemsList = provider.getExpensesByCategory;
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: itemsList.length,
