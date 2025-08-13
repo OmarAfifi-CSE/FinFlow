@@ -116,10 +116,22 @@ class ExpenseProvider with ChangeNotifier {
       _expenses = (results[0] as List)
           .map((item) => Expense.fromJson(item))
           .toList();
-      _categories = (results[1] as List)
+      List<ExpenseCategory> fetchedCategories = (results[1] as List)
           .map((item) => ExpenseCategory.fromJson(item))
           .toList();
-      _tags = (results[2] as List).map((item) => Tag.fromJson(item)).toList();
+      List<Tag> fetchedTags = (results[2] as List)
+          .map((item) => Tag.fromJson(item))
+          .toList();
+
+      if (fetchedCategories.isEmpty) {
+        fetchedCategories = await _addDefaultCategories(userId);
+      }
+      if (fetchedTags.isEmpty) {
+        fetchedTags = await _addDefaultTags(userId);
+      }
+
+      _categories = fetchedCategories;
+      _tags = fetchedTags;
 
       _isDataLoaded = true;
 
@@ -303,7 +315,7 @@ class ExpenseProvider with ChangeNotifier {
     );
   }
 
-  Future<void> _addDefaultCategories(String userId) async {
+  Future<List<ExpenseCategory>> _addDefaultCategories(String userId) async {
     final List<Map<String, dynamic>> defaultCategories = [
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Food'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Transport'},
@@ -320,11 +332,16 @@ class ExpenseProvider with ChangeNotifier {
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Salary'},
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Savings'},
     ];
-    await supabase.from('categories').insert(defaultCategories);
-    await fetchInitialData();
+    final savedData = await supabase
+        .from('categories')
+        .insert(defaultCategories)
+        .select();
+    return (savedData as List)
+        .map((item) => ExpenseCategory.fromJson(item))
+        .toList();
   }
 
-  Future<void> _addDefaultTags(String userId) async {
+  Future<List<Tag>> _addDefaultTags(String userId) async {
     final List<Map<String, dynamic>> defaultTags = [
       // --- Food ---
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Dinner'},
@@ -366,7 +383,7 @@ class ExpenseProvider with ChangeNotifier {
       // --- Salary ---
       {'id': uuid.v4(), 'user_id': userId, 'name': 'Bonus'},
     ];
-    await supabase.from('tags').insert(defaultTags);
-    await fetchInitialData();
+    final savedData = await supabase.from('tags').insert(defaultTags).select();
+    return (savedData as List).map((item) => Tag.fromJson(item)).toList();
   }
 }
