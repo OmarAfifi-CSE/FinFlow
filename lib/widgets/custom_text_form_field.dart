@@ -13,6 +13,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final TextEditingController? controller;
   final String? valMessage;
+  final void Function(String)? onFieldSubmitted;
 
   const CustomTextFormField({
     super.key,
@@ -25,6 +26,7 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.controller,
     this.valMessage,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -45,6 +47,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     return Form(
       key: widget.formKey,
       child: TextFormField(
+        onFieldSubmitted: widget.onFieldSubmitted,
         style: AppTextStyles.blackTextStyle.copyWith(fontSize: 16),
         controller: widget.controller,
         validator: (value) {
