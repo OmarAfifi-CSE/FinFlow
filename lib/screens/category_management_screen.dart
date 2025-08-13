@@ -114,6 +114,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'categoryScreenFAB',
         onPressed: () => _showAddCategoryDialog(context, provider),
         tooltip: 'Add New Category',
         backgroundColor: AppColors.primaryColor,

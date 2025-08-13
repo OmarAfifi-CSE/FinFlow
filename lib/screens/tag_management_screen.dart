@@ -91,6 +91,7 @@ class TagManagementScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'tagsScreenFAB',
         onPressed: () => _showAddTagDialog(context, provider),
         tooltip: 'Add New Tag',
         backgroundColor: AppColors.primaryColor,
