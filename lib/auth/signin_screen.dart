@@ -247,6 +247,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   obscureText: true,
                   formKey: passwordState,
                   valMessage: "Please enter your password",
+                  onFieldSubmitted: (_) => _signIn(),
                 ),
                 const SizedBox(height: 40),
                 Row(

@@ -155,6 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: true,
                     formKey: passwordState,
                     valMessage: 'Please enter your password',
+                    onFieldSubmitted: (_) => _signUp(),
                   ),
                   const SizedBox(height: 70),
                   if (_isLoading)
