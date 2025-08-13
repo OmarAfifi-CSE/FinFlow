@@ -106,7 +106,7 @@ FinFlow is a full-featured application designed for a seamless user experience. 
 </table>
 </details>
 
-<details>
+<details open>
 <summary>🌙 View Dark Mode Screenshots</summary>
 <br>
 <table width="100%">
@@ -183,30 +183,32 @@ FinFlow is a full-featured application designed for a seamless user experience. 
 
 FinFlow is packed with features to make financial management simple and effective.
 
--   **Cross-Platform:** Single codebase for **Android, iOS, Web, and Windows**.
--   **Secure Authentication:** Safe sign-up and sign-in powered by Supabase Auth, including secure password reset.
--   **Dashboard Overview:** Get an instant snapshot of your total balance, total income, and total expenses.
--   **Transaction Management:** Effortlessly add, edit, or delete income and expense records.
--   **Smart Categorization:** Assign categories to your transactions for better analysis (e.g., Food, Transport, Bills).
--   **Custom Tags:** Add custom tags for better organization of your spending (e.g., #Work, #Vacation).
--   **Dynamic Filtering:** View your transaction history by date or grouped by category.
--   **Category & Tag Management:** A dedicated space to create, view, and delete your custom categories and tags.
--   **User Profile:** View your account details and securely change your password.
--   **Persistent Data:** All your data is securely stored and synced across your devices using the Supabase database.
--   **Sleek & Responsive UI:** A clean, modern, and user-friendly interface that looks great on any screen size.
+- **Cross-Platform:** A single codebase for a consistent experience on **Android, iOS, Web, and Windows**.
+- **Secure & Complete Authentication:** Safe sign-up and sign-in powered by Supabase Auth, including a secure flow for **password resets**.
+- **All-in-One Dashboard:** Get an instant snapshot of your total balance, income, and expenses.
+- **Advanced Transaction Management:** Effortlessly add, edit, and delete records, with powerful filtering by date or category.
+- **Insightful Analysis:** Instantly see where your money goes with a percentage breakdown of your spending by category.
+- **Deep Categorization:** Organize your spending your way with custom **categories and tags** for detailed tracking.
+- **Light & Dark Modes:** Choose the look that's right for you with beautifully crafted light and dark themes.
+- **Smart Connectivity Monitoring:** The app intelligently detects your online status to ensure data is always synced and up-to-date.
+- **Reliable Data Sync:** Your data is securely stored and synchronized across all your devices using the Supabase realtime database.
+- **Sleek & Responsive UI:** A clean, modern, and user-friendly interface that looks great on any screen size.
 
 ---
 
-## 🚀 Technologies Used
+## 🛠️ Tech Stack & Key Packages
 
-This project leverages a modern, powerful tech stack to deliver a high-quality experience.
+FinFlow is built with a modern and robust stack, leveraging the power of Flutter for the UI and Supabase for the backend. Here are some of the key packages and technologies that make it work:
 
-| Technology | Description |
-| :--- | :--- |
-| **Flutter** | Google's UI toolkit for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase. |
-| **Supabase** | The open-source Firebase alternative. Used for Database, Authentication, and Auto-generated APIs. |
-| **Provider** | A robust and simple state management solution for Flutter. |
-| **Dart** | The programming language used to build the application. |
+* **Core:** Flutter & Dart
+* **Backend as a Service (BaaS):** Supabase using `supabase_flutter`
+* **State Management:** `provider`
+* **Routing:** `go_router` for a declarative, URL-based navigation system.
+* **Key Utility Packages:**
+    * `connectivity_plus`: For checking network status.
+    * `flutter_svg`: To render beautiful SVG assets.
+    * `intl`: For date and number formatting.
+    * `shared_preferences`: For simple local data storage.
 
 ---
 
