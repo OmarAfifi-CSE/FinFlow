@@ -111,17 +111,13 @@ class _ConnectivityMonitorState extends State<ConnectivityMonitor> {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
                               ),
                             ),
                             SizedBox(height: 10),
                             Text(
                               'Please check your network settings and try again.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.black54,
-                              ),
+                              style: TextStyle(fontSize: 15),
                             ),
                           ],
                         ),
