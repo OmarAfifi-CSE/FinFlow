@@ -32,60 +32,150 @@ FinFlow is a modern, intuitive, and secure application designed to help you take
 
 ## 📸 A Showcase of FinFlow
 
-FinFlow is a full-featured application designed for a seamless user experience. Here is a gallery showcasing the core screens and functionalities.
+FinFlow is a full-featured application designed for a seamless user experience. Click below to view the gallery in your preferred theme.
 
+<details open>
+<summary>☀️ View Light Mode Screenshots</summary>
+<br>
 <table width="100%">
 <tr>
     <td width="50%" valign="top">
       <h4 align="center">Welcome Aboard</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//1-%20Onboarding_Screenshot.png?text=Onboarding+Screen" alt="Onboarding" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/1-%20Onboarding_Screenshot.png" alt="Onboarding" width="300">
       </p>
       <p>A simple and beautiful onboarding experience to welcome users and highlight the app's value proposition from the very first launch.</p>
     </td>
     <td width="50%" valign="top">
       <h4 align="center">Secure Authentication</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//2-%20Signin_Screen.png?text=Sign-In+Screen" alt="Sign-In" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/2-%20Signin_Screen.png" alt="Sign-In" width="300">
       </p>
       <p>Robust and secure user sign-up and sign-in powered by Supabase Auth. Your financial data is protected from the start.</p>
     </td>
   </tr>
-
 <tr>
     <td width="50%" valign="top">
       <h4 align="center">Financial Dashboard</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//3-%20Dashboard_Screenshot.png?text=Dashboard" alt="Dashboard" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/3-%20Dashboard_Screenshot.png" alt="Dashboard" width="300">
       </p>
       <p>The central hub gives you an instant snapshot of your balance, income, and expenses. A live list of recent transactions keeps you up-to-date.</p>
     </td>
+  <td width="50%" valign="top">
+      <h4 align="center">Detailed Transaction View</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/4-%20Transactions_ByCategory_Screenshot.png" alt="Transactions By Category" width="300">
+      </p>
+      <p>Group transactions by category to see a detailed breakdown of your spending, including the percentage of total expenses.</p>
+    </td>
+    
+  </tr>
+<tr>
     <td width="50%" valign="top">
       <h4 align="center">Effortless Transaction Entry</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//4-%20Add%20Transaction_Screenshot.png?text=Add+Transaction" alt="Add Transaction" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/5-%20Add%20Transaction_Screenshot.png" alt="Add Transaction" width="300">
       </p>
       <p>An intuitive bottom-sheet interface makes adding income or expenses incredibly fast. Categorize and tag on the fly to maintain perfect records.</p>
     </td>
+    <td width="50%" valign="top">
+      <h4 align="center">Custom Categories</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/6-%20Categories_Screenshot.png" alt="Category Management" width="300">
+      </p>
+      <p>Take full control by creating and managing your own spending categories. Tailor the app to fit your unique financial life.</p>
+    </td>
   </tr>
-
 <tr>
     <td width="50%" valign="top">
-      <h4 align="center">Custom Categories & Tags</h4>
+      <h4 align="center">Custom Tags</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//5-%20Categories_Screenshot.png?text=Category+Management" alt="Category Management" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/7-%20Tags_Screenshot.png" alt="Tags Management" width="300">
       </p>
-      <p>Take full control by creating and managing your own spending categories and tags. Tailor the app to fit your unique financial life.</p>
+      <p>Further organize your transactions with custom tags, making it easy to track specific projects or events like #Vacation or #Work.</p>
     </td>
     <td width="50%" valign="top">
       <h4 align="center">User Profile & Security</h4>
       <p align="center">
-        <img src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//6-%20Profile_Screenshot.png?text=Profile+Page" alt="Profile Page" width="300">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Light%20Theme/8-%20Profile_Screenshot.png" alt="Profile Page" width="300">
       </p>
       <p>View your account information and securely update your password. User control and security are at the core of FinFlow.</p>
     </td>
   </tr>
 </table>
+</details>
+
+<details>
+<summary>🌙 View Dark Mode Screenshots</summary>
+<br>
+<table width="100%">
+<tr>
+    <td width="50%" valign="top">
+      <h4 align="center">Welcome Aboard</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/1-%20Onboarding_Screenshot.png" alt="Onboarding - Dark Mode" width="300">
+      </p>
+      <p>A simple and beautiful onboarding experience to welcome users and highlight the app's value proposition from the very first launch.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h4 align="center">Secure Authentication</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/2-%20Signin_Screen.png" alt="Sign-In - Dark Mode" width="300">
+      </p>
+      <p>Robust and secure user sign-up and sign-in powered by Supabase Auth. Your financial data is protected from the start.</p>
+    </td>
+  </tr>
+<tr>
+    <td width="50%" valign="top">
+      <h4 align="center">Financial Dashboard</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/3-%20Dashboard_Screenshot.png" alt="Dashboard - Dark Mode" width="300">
+      </p>
+      <p>The central hub gives you an instant snapshot of your balance, income, and expenses. A live list of recent transactions keeps you up-to-date.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h4 align="center">Detailed Transaction View</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/4-%20Transactions_ByCategory_Screenshot.png" alt="Transactions By Category - Dark Mode" width="300">
+      </p>
+      <p>Group transactions by category to see a detailed breakdown of your spending, including the percentage of total expenses.</p>
+    </td>
+  </tr>
+<tr>
+  <td width="50%" valign="top">
+      <h4 align="center">Effortless Transaction Entry</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/5-%20Add%20Transaction_Screenshot.png" alt="Add Transaction - Dark Mode" width="300">
+      </p>
+      <p>An intuitive bottom-sheet interface makes adding income or expenses incredibly fast. Categorize and tag on the fly to maintain perfect records.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h4 align="center">Custom Categories</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/6-%20Categories_Screenshot.png" alt="Category Management - Dark Mode" width="300">
+      </p>
+      <p>Take full control by creating and managing your own spending categories. Tailor the app to fit your unique financial life.</p>
+    </td>
+  </tr>
+<tr>
+    <td width="50%" valign="top">
+      <h4 align="center">Custom Tags</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/7-%20Tags_Screenshot.png" alt="Tags Management - Dark Mode" width="300">
+      </p>
+      <p>Further organize your transactions with custom tags, making it easy to track specific projects or events like #Vacation or #Work.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h4 align="center">User Profile & Security</h4>
+      <p align="center">
+        <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Dark%20Theme/8-%20Profile_Screenshot.png" alt="Profile Page - Dark Mode" width="300">
+      </p>
+      <p>View your account information and securely update your password. User control and security are at the core of FinFlow.</p>
+    </td>
+  </tr>
+</table>
+</details>
 
 ---
 
