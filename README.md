@@ -1,12 +1,12 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//Logo.png">
-  <img alt="FinFlow Logo" src="https://fpeynvsshkecovrkuwfx.supabase.co/storage/v1/object/public/assets//Logo.png" width="100">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Logo.png">
+  <img alt="FinFlow Logo" src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Logo.png" width="100">
 </picture>
 
 <p align="center">
-  <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/Platforms_Mockups.gif" alt="FinFlow App Demo" width="900"/>
+  <img src="https://github.com/OmarAfifi-CSE/FinFlow/blob/master/assets/screenshots/Platforms_Mockups.gif" alt="FinFlow App Demo" width="900"/>
 </p>
 </div>
 
