@@ -129,11 +129,11 @@ class TagManagementScreen extends StatelessWidget {
   ) async {
     await provider.deleteTag(tag.id);
     if (context.mounted) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 2),
           content: Text('"${tag.name}" deleted.'),
-          backgroundColor: Colors.black87,
         ),
       );
     }

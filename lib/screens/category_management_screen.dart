@@ -135,10 +135,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         SnackBar(
           duration: const Duration(seconds: 4),
           content: Text('"${deletedData.category.name}" deleted.'),
-          backgroundColor: Colors.black87,
           action: SnackBarAction(
             label: 'UNDO',
-            textColor: Colors.yellow,
+            textColor: Colors.teal,
             onPressed: () {
               provider.undoDeleteCategory(deletedData);
             },
